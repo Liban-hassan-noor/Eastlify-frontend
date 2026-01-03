@@ -1,11 +1,12 @@
 import { useParams, Link } from 'react-router-dom';
 import { useShop } from '../../context/ShopContext';
-import { Phone, MapPin, Star, Share2, ArrowLeft, Package } from 'lucide-react';
+import { Phone, MapPin, Star, Share2, ArrowLeft, Package, MessageCircle } from 'lucide-react';
 
 export default function ShopDetails() {
   const { id } = useParams();
-  const { shops } = useShop();
+  const { shops, getShopListings } = useShop();
   const shop = shops.find(s => s.id === id);
+  const listings = getShopListings(id);
 
   if (!shop) return (
     <div className="text-center py-20">
@@ -62,26 +63,57 @@ export default function ShopDetails() {
             <section>
                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                  <Package className="w-5 h-5 text-amber-600" />
-                 Featured Products
+                 Shop Window
                </h2>
-               {/* Mock products */}
-               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition">
-                       <div className="aspect-square bg-gray-100 rounded-xl mb-3 overflow-hidden">
-                          <img 
-                            src={`https://source.unsplash.com/random/300x300?product,${i}`} 
-                            alt="Product" 
-                            className="w-full h-full object-cover"
-                            onError={(e) => e.target.style.display = 'none'} // Fallback if unsplash fails
-                          />
-                       </div>
-                       <div className="font-bold text-gray-900 truncate">Premium Item {i}</div>
-                       <div className="text-sm text-gray-500 mb-1">High quality</div>
-                       <div className="text-amber-600 font-bold">KSh {(i * 1200) + 500}</div>
-                    </div>
-                  ))}
-               </div>
+               
+               {listings.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                      {listings.map(item => (
+                        <div key={item.id} className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition">
+                          <div className="aspect-square bg-gray-50 rounded-xl mb-3 overflow-hidden relative">
+                              <img 
+                                src={item.images[0]} 
+                                alt={item.title}
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                              />
+                              {item.isOnOffer && (
+                                <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sm">
+                                  OFFER
+                                </div>
+                              )}
+                              {item.availability !== 'In Stock' && (
+                                <div className="absolute bottom-2 left-2 right-2 text-center bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-md">
+                                  {item.availability}
+                                </div>
+                              )}
+                          </div>
+                          <div className="font-bold text-gray-900 truncate mb-1">{item.title}</div>
+                          
+                          <div className="flex items-center flex-wrap gap-2 mb-2">
+                             <div className="text-amber-600 font-bold">KES {item.isOnOffer ? item.offerPrice.toLocaleString() : item.price.toLocaleString()}</div>
+                             {item.isOnOffer && (
+                               <div className="text-xs text-gray-400 line-through">{item.price.toLocaleString()}</div>
+                             )}
+                          </div>
+
+                          <a 
+                            href={`https://wa.me/${shop.phone.replace('+', '')}?text=Hi, I am interested in ${item.title}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block w-full py-2 bg-gray-900 text-white text-xs font-bold rounded-lg text-center hover:bg-black transition"
+                          >
+                            I'm Interested
+                          </a>
+                        </div>
+                      ))}
+                  </div>
+               ) : (
+                  <div className="text-center py-10 bg-gray-50 rounded-2xl border border-gray-100 border-dashed">
+                     <Package className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                     <p className="text-gray-500">No items listed yet.</p>
+                  </div>
+               )}
             </section>
          </div>
 
@@ -99,6 +131,16 @@ export default function ShopDetails() {
                >
                  <Phone className="w-5 h-5 fill-current" />
                  Call Shop
+               </a>
+
+               <a 
+                 href={`https://wa.me/${shop.phone.replace('+', '')}`}
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="flex items-center justify-center gap-2 w-full py-3 mt-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition"
+               >
+                 <MessageCircle className="w-5 h-5" />
+                 WhatsApp Shop
                </a>
                
                <button className="flex items-center justify-center gap-2 w-full py-3 mt-3 bg-white text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition border-2 border-gray-200">

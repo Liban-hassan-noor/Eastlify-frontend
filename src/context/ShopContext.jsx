@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { MOCK_SHOPS } from '../data/mockData';
+import { MOCK_SHOPS, MOCK_LISTINGS } from '../data/mockData';
 
 const ShopContext = createContext();
 
@@ -29,6 +29,37 @@ export function ShopProvider({ children }) {
       localStorage.removeItem('eastlify_user');
     }
   }, [currentUser]);
+
+  // Listings logic
+  const [listings, setListings] = useState(() => {
+    const saved = localStorage.getItem('eastlify_listings');
+    return saved ? JSON.parse(saved) : MOCK_LISTINGS;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('eastlify_listings', JSON.stringify(listings));
+  }, [listings]);
+
+  const addListing = (newListing) => {
+    const listingWithId = {
+      ...newListing,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString()
+    };
+    setListings(prev => [listingWithId, ...prev]);
+  };
+
+  const updateListing = (id, updates) => {
+    setListings(prev => prev.map(l => l.id === id ? { ...l, ...updates } : l));
+  };
+
+  const deleteListing = (id) => {
+    setListings(prev => prev.filter(l => l.id !== id));
+  };
+
+  const getShopListings = (shopId) => {
+    return listings.filter(l => l.shopId === shopId);
+  };
 
   // Favorites logic
   const [favorites, setFavorites] = useState(() => {
@@ -92,7 +123,11 @@ export function ShopProvider({ children }) {
   };
 
   return (
-    <ShopContext.Provider value={{ shops, currentUser, login, logout, registerShop, updateShop, favorites, toggleFavorite, isFavorite }}>
+    <ShopContext.Provider value={{ 
+      shops, currentUser, login, logout, registerShop, updateShop, 
+      favorites, toggleFavorite, isFavorite,
+      listings, addListing, updateListing, deleteListing, getShopListings 
+    }}>
       {children}
     </ShopContext.Provider>
   );

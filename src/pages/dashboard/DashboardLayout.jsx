@@ -3,13 +3,15 @@ import Overview from './Overview';
 import MyShop from './MyShop';
 import Orders from './Orders';
 import Sales from './Sales';
-import { LayoutDashboard, Store, ShoppingBag, BarChart3 } from 'lucide-react';
+import Listings from './listings/Listings';
+import { LayoutDashboard, Store, ShoppingBag, BarChart3, Tag } from 'lucide-react';
 
 export default function DashboardLayout() {
   const { pathname } = useLocation();
 
   const tabs = [
     { path: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+    { path: '/dashboard/listings', label: 'My Listings', icon: Tag },
     { path: '/dashboard/shop', label: 'My Shop', icon: Store },
     { path: '/dashboard/orders', label: 'Requests', icon: ShoppingBag },
     { path: '/dashboard/sales', label: 'Sales', icon: BarChart3 },
@@ -52,6 +54,7 @@ export default function DashboardLayout() {
       <div className="min-h-[400px]">
         <Routes>
           <Route path="/" element={<Overview />} />
+          <Route path="/listings" element={<Listings />} />
           <Route path="/shop" element={<MyShop />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/sales" element={<Sales />} />

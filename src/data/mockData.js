@@ -64,3 +64,31 @@ export const MOCK_ORDERS = [
   { id: '102', customer: "Ahmed Hassan", product: "Samsung Charger", status: "Pending", date: "2023-12-02", amount: 2500 },
   { id: '103', customer: "Halima J", product: "Dirac Set", status: "Completed", date: "2023-12-02", amount: 4500 }
 ];
+
+export const MOCK_LISTINGS = [
+  {
+    id: 'l1',
+    shopId: '1',
+    title: 'Premium Somali Dirac',
+    description: 'High quality silk dirac with matching garbarsaar. Available in multiple colors.',
+    price: 4500,
+    isOnOffer: true,
+    offerPrice: 3500,
+    availability: 'In Stock',
+    images: ['https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?auto=format&fit=crop&q=80&w=800'],
+    category: 'Textiles',
+    createdAt: '2023-12-01T10:00:00Z'
+  },
+  {
+    id: 'l2',
+    shopId: '2',
+    title: 'iPhone 15 Pro Max',
+    description: 'Brand new, 256GB, Titanium Blue. 1 year Apple Warranty.',
+    price: 185000,
+    isOnOffer: false,
+    availability: 'Limited',
+    images: ['https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&q=80&w=800'],
+    category: 'Electronics',
+    createdAt: '2023-12-02T14:30:00Z'
+  }
+];
