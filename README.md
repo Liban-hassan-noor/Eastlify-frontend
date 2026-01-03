@@ -1,16 +1,58 @@
-# React + Vite
+# Eastlify 
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A "Mobile-First" Local Marketplace for Eastleigh, Nairobi.
 
-Currently, two official plugins are available:
+Eastlify connects customers directly to shops in Eastleigh (Islii) without middlemen. It serves as a digital directory and shop window where customers can browse, discover, and contact shops via Phone or WhatsApp.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+##  Features
 
-## React Compiler
+### For Customers (The Buyers)
+- **Browse Shops**: Discover local boutiques by category (Textiles, Electronics, Cosmetics, etc.) or street.
+- **Search**: Powerful search for shops, products, or locations.
+- **Digital Shop Window**: View actual products avaliable in shops with prices and offers.
+- **Direct Connect**: "Call Shop" and "WhatsApp Shop" buttons to deal directly with the seller.
+- **Favorites**: Save your favorite shops for quick access later.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### For Shop Owners (The Sellers)
+- **Shop Profile**: Manage your business details, location, and contact info.
+- **My Listings**: Create a digital catalog of your products.
+  - Upload real photos from your gallery.
+  - Set "In Stock", "Limited", or "Out of Stock" status.
+  - Highlight special offers.
+- **Dashboard**: Track incoming calls (clicks) and manage your store performance.
 
-## Expanding the ESLint configuration
+##  Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Frontend**: React 19 + Vite
+- **Styling**: Tailwind CSS v4
+- **Routing**: React Router 7
+- **Icons**: Lucide React
+- **State Management**: React Context API + LocalStorage (for MVP data persistence)
+
+## 🏃‍♂️ Getting Started
+
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/liban-hassan-noor/eastlify.git
+    cd eastlify
+    ```
+
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
+
+3.  **Run the development server**
+    ```bash
+    npm run dev
+    ```
+
+4.  **Open in Browser**
+    Visit `http://localhost:5173`
+
+## 📱 Mobile-First Design
+
+This app is optimized for mobile usage, mirroring the browsing habits of users in Nairobi who rely on their phones for discovering local businesses.
+
+---
+*Built as an MVP demonstration.*
