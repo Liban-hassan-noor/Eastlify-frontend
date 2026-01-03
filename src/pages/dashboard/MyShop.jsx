@@ -52,6 +52,15 @@ export default function MyShop() {
               />
             </div>
             <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Email</label>
+              <input
+                type="email"
+                value={formData.email || ''}
+                onChange={e => setFormData({...formData, email: e.target.value})}
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-amber-500 outline-none transition"
+              />
+            </div>
+            <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">Street</label>
               <select
                 value={formData.street || ''}
@@ -64,21 +73,71 @@ export default function MyShop() {
           </div>
 
           <div>
-             <label className="block text-sm font-bold text-gray-700 mb-2">Image URL</label>
-             <div className="flex gap-2">
-               <div className="relative flex-1">
-                 <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                 <input
-                   type="text"
-                   value={formData.image || ''}
-                   onChange={e => setFormData({...formData, image: e.target.value})}
-                   className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-amber-500 outline-none transition text-sm text-gray-600"
-                 />
-               </div>
+             <label className="block text-sm font-bold text-gray-700 mb-2">Categories</label>
+             <div className="flex flex-wrap gap-2">
+                {MOCK_CATEGORIES.map(c => {
+                  const isSelected = formData.categories?.includes(c.name);
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => {
+                        setFormData(prev => {
+                          const currentCats = prev.categories || [];
+                          const newCategories = isSelected
+                            ? currentCats.filter(cat => cat !== c.name)
+                            : [...currentCats, c.name];
+                          return { ...prev, categories: newCategories };
+                        });
+                      }}
+                       className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition ${
+                        isSelected 
+                          ? 'bg-amber-600 text-white border-amber-600' 
+                          : 'bg-white text-gray-600 border-gray-200 hover:border-amber-300'
+                      }`}
+                    >
+                      {c.name}
+                    </button>
+                  );
+                })}
              </div>
-             {formData.image && (
-               <img src={formData.image} alt="Preview" className="h-20 w-full object-cover rounded-xl mt-2 border border-gray-100" />
-             )}
+          </div>
+
+          <div>
+             <label className="block text-sm font-bold text-gray-700 mb-2">Shop Profile Image</label>
+             <div className="space-y-3">
+               {formData.image && (
+                 <div className="relative h-48 w-full rounded-2xl overflow-hidden border border-gray-100 group">
+                    <img src={formData.image} alt="Shop Preview" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                       <span className="text-white font-bold text-sm">Change Image</span>
+                    </div>
+                 </div>
+               )}
+               
+               <label className="flex items-center justify-center gap-2 w-full py-3 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-amber-500 hover:bg-amber-50 transition group">
+                  <ImageIcon className="w-5 h-5 text-gray-400 group-hover:text-amber-600" />
+                  <span className="text-gray-600 font-medium text-sm group-hover:text-amber-700">
+                    {formData.image ? 'Replace Image' : 'Upload Shop Image'}
+                  </span>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={(e) => {
+                       const file = e.target.files[0];
+                       if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                             setFormData({...formData, image: reader.result});
+                          };
+                          reader.readAsDataURL(file);
+                       }
+                    }}
+                  />
+               </label>
+               <p className="text-xs text-gray-400 text-center">Tap to upload from gallery (Saved locally)</p>
+             </div>
           </div>
 
           <div>

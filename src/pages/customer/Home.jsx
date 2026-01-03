@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, ArrowRight, Shirt, Smartphone, Sparkles, Footprints, Moon, Box, ShoppingBag } from 'lucide-react';
+import { Search, MapPin, ArrowRight, Shirt, Smartphone, Sparkles, Footprints, Moon, Box, ShoppingBag, Phone, Briefcase, Baby, Home as HomeIcon } from 'lucide-react';
 import { MOCK_CATEGORIES, MOCK_STREETS } from '../../data/mockData';
 
 // Map icon strings to Lucide components
@@ -10,7 +10,12 @@ const ICON_MAP = {
   Sparkles,
   Footprints,
   Moon,
-  Box
+  Box,
+  Phone,
+  Briefcase,
+  Baby,
+  Home: HomeIcon,
+  SprayCan: Sparkles // Fallback or use Sparkles for nice scent visual if SprayCan doesn't exist/work well
 };
 
 export default function Home() {
@@ -31,15 +36,15 @@ export default function Home() {
       {/* Hero Section */}
       <section className="text-center space-y-6 pt-8 sm:pt-16">
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 tracking-tight leading-tight">
-          Find it in <span className="text-amber-600 relative inline-block">
-            Eastleigh
+          Everything Eastleigh, <span className="text-amber-600 relative inline-block">
+            without going there.
             <svg className="absolute w-full h-3 -bottom-1 left-0 text-amber-200 -z-10" viewBox="0 0 100 10" preserveAspectRatio="none">
                <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" />
             </svg>
           </span>
         </h1>
         <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
-          The Direct Connection. Browse thousands of shops and call them directly. <br className="hidden sm:block"/> No middlemen. Just business.
+         Find shops, see what they sell, and call them directly. <br className="hidden sm:block"/> No middlemen. Just business.
         </p>
 
         <form onSubmit={handleSearch} className="max-w-xl mx-auto relative group">

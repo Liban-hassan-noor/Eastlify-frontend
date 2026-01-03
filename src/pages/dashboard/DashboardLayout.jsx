@@ -5,9 +5,11 @@ import Orders from './Orders';
 import Sales from './Sales';
 import Listings from './listings/Listings';
 import { LayoutDashboard, Store, ShoppingBag, BarChart3, Tag } from 'lucide-react';
+import { useShop } from '../../context/ShopContext';
 
 export default function DashboardLayout() {
   const { pathname } = useLocation();
+  const { currentUser } = useShop();
 
   const tabs = [
     { path: '/dashboard', label: 'Overview', icon: LayoutDashboard },
@@ -27,7 +29,7 @@ export default function DashboardLayout() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-         <div className="text-sm text-gray-400">Welcome back</div>
+         <div className="text-sm text-gray-500 font-medium">Welcome back, <span className="text-gray-900 font-bold">{currentUser?.name}</span></div>
       </div>
 
       {/* Tab Nav */}

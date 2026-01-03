@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useShop } from '../../context/ShopContext';
-import { Store, MapPin, Phone, User, Tag } from 'lucide-react';
+import { Store, MapPin, Phone, User, Tag, Mail } from 'lucide-react';
 import { MOCK_CATEGORIES, MOCK_STREETS } from '../../data/mockData';
 
 export default function Register() {
@@ -11,18 +11,17 @@ export default function Register() {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
+    email: '',
     street: MOCK_STREETS[0],
-    category: MOCK_CATEGORIES[0].name,
+    categories: [],
     description: ''
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // In real app, validation here
-    registerShop({
-      ...formData,
-      categories: [formData.category] // Simplified to single category for MVP registration
-    });
+    if (formData.categories.length === 0) return;
+    
+    registerShop(formData);
     navigate('/dashboard');
   };
 
@@ -63,6 +62,21 @@ export default function Register() {
                 placeholder="e.g. 0712345678"
               />
             </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email </label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+               required
+                type="email"
+                value={formData.email}
+                onChange={e => setFormData({...formData, email: e.target.value})}
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition"
+                placeholder="e.g. shop@example.com"
+              />
+            </div>
+          </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -81,17 +95,36 @@ export default function Register() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-               <div className="relative">
-                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <select
-                  value={formData.category}
-                  onChange={e => setFormData({...formData, category: e.target.value})}
-                  className="w-full pl-10 pr-8 py-2.5 rounded-xl border border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition appearance-none bg-white"
-                >
-                  {MOCK_CATEGORIES.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-                </select>
-              </div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Categories (Select all that apply)</label>
+               <div className="flex flex-wrap gap-2">
+                  {MOCK_CATEGORIES.map(c => {
+                    const isSelected = formData.categories.includes(c.name);
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => {
+                          setFormData(prev => {
+                            const newCategories = isSelected
+                              ? prev.categories.filter(cat => cat !== c.name)
+                              : [...prev.categories, c.name];
+                            return { ...prev, categories: newCategories };
+                          });
+                        }}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition ${
+                          isSelected 
+                            ? 'bg-amber-600 text-white border-amber-600' 
+                            : 'bg-white text-gray-600 border-gray-200 hover:border-amber-300'
+                        }`}
+                      >
+                        {c.name}
+                      </button>
+                    );
+                  })}
+               </div>
+               {formData.categories.length === 0 && (
+                 <p className="text-red-500 text-xs mt-1">Please select at least one category.</p>
+               )}
             </div>
           </div>
 

@@ -1,20 +1,25 @@
 export const MOCK_CATEGORIES = [
   { id: '1', name: "Textiles", icon: "Shirt" },
-  { id: '2', name: "Electronics", icon: "Smartphone" },
-  { id: '3', name: "Cosmetics", icon: "Sparkles" },
-  { id: '4', name: "Shoes", icon: "Footprints" },
-  { id: '5', name: "Islamic Wear", icon: "Moon" },
-  { id: '6', name: "Wholesale", icon: "Box" }
+  { id: '2', name: "Islamic Wear", icon: "Moon" },
+  { id: '3', name: "Shoes", icon: "Footprints" },
+  { id: '4', name: "Cosmetics", icon: "Sparkles" },
+  { id: '5', name: "Perfumes & Fragrances", icon: "SprayCan" },
+  { id: '6', name: "Electronics", icon: "Smartphone" },
+  { id: '7', name: "Phones & Accessories", icon: "Phone" },
+  { id: '8', name: "Bags & Luggage", icon: "Briefcase" },
+  { id: '9', name: "Kids & Baby Wear", icon: "Baby" },
+  { id: '10', name: "Home & Household", icon: "Home" },
+  { id: '11', name: "Wholesale", icon: "Box" }
 ];
 
 export const MOCK_STREETS = [
-  "First Avenue", 
-  "Second Avenue", 
-  "Garage", 
-  "Yusuf Haji", 
-  "Bangledesh",
-  "Eastleigh Mall",
-  "Business Bay"
+  "12th Street", "11th Street", "10th Street", "9th Street", "8th Street", 
+  "7th Street", "6th Street", "5th Street", "4th Street", "3rd Street", 
+  "2nd Street", "1st Street",
+  "Jam Street", "Yusuf Haji Avenue", "First Avenue", "Second Avenue", 
+  "Garage Road",
+  "Eastleigh Mall", "Business Bay", "Garissa Lodge Area", 
+  "Amal Plaza Area", "California Area"
 ];
 
 export const MOCK_SHOPS = [
@@ -34,7 +39,7 @@ export const MOCK_SHOPS = [
   {
     id: "2",
     name: "Digital World Islii",
-    street: "Garage",
+    street: "Garage Road",
     phone: "+254700000002",
     categories: ["Electronics"],
     description: "Latest iPhones, Samsungs, laptops and accessories. Best prices in Nairobi.",
@@ -49,7 +54,7 @@ export const MOCK_SHOPS = [
     name: "Madina Scents",
     street: "Eastleigh Mall",
     phone: "+254700000003",
-    categories: ["Cosmetics"],
+    categories: ["Cosmetics", "Perfumes & Fragrances"],
     description: "Authentic Arabian perfumes and beauty products.",
     image: "https://images.unsplash.com/photo-1616949755610-8c97321e25b3?auto=format&fit=crop&q=80&w=800",
     rating: 4.2,
