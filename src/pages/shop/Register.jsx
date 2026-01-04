@@ -10,6 +10,7 @@ export default function Register() {
   
   const [formData, setFormData] = useState({
     name: '',
+    ownerName: '',
     phone: '',
     email: '',
     street: MOCK_STREETS[0],
@@ -45,6 +46,21 @@ export default function Register() {
                 onChange={e => setFormData({...formData, name: e.target.value})}
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition"
                 placeholder="e.g. Al-Amin Textiles"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Owner Name</label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                required
+                type="text"
+                value={formData.ownerName}
+                onChange={e => setFormData({...formData, ownerName: e.target.value})}
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition"
+                placeholder="e.g. Hassan Noor"
               />
             </div>
           </div>
