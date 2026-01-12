@@ -1,79 +1,217 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { MOCK_SHOPS, MOCK_LISTINGS } from '../data/mockData';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import * as authApi from '../api/auth';
+import * as shopsApi from '../api/shops';
+import * as productsApi from '../api/products';
 
 const ShopContext = createContext();
 
 export function ShopProvider({ children }) {
-  // Initialize from localStorage or mock data
-  const [shops, setShops] = useState(() => {
-    const saved = localStorage.getItem('eastlify_shops');
-    return saved ? JSON.parse(saved) : MOCK_SHOPS;
-  });
+  const [shops, setShops] = useState([]);
+  const [shopsLoading, setShopsLoading] = useState(true);
+  const [shopsError, setShopsError] = useState(null);
 
-  // Initialize session from localStorage
-  const [currentUser, setCurrentUser] = useState(() => {
-    const saved = localStorage.getItem('eastlify_user');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [token, setToken] = useState(localStorage.getItem('eastlify_token'));
 
-  // Persist shops
-  useEffect(() => {
-    localStorage.setItem('eastlify_shops', JSON.stringify(shops));
-  }, [shops]);
+  // listings, favorites, etc.
+  const [listings, setListings] = useState([]); // Used for public shop view
+  const [myListings, setMyListings] = useState([]); // Used for owner dashboard
+  const [listingsLoading, setListingsLoading] = useState(false);
 
-  // Persist session
-  useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem('eastlify_user', JSON.stringify(currentUser));
-    } else {
-      localStorage.removeItem('eastlify_user');
-    }
-  }, [currentUser]);
-
-  // Listings logic
-  const [listings, setListings] = useState(() => {
-    const saved = localStorage.getItem('eastlify_listings');
-    return saved ? JSON.parse(saved) : MOCK_LISTINGS;
-  });
-
-  useEffect(() => {
-    localStorage.setItem('eastlify_listings', JSON.stringify(listings));
-  }, [listings]);
-
-  const addListing = (newListing) => {
-    const listingWithId = {
-      ...newListing,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString()
-    };
-    setListings(prev => [listingWithId, ...prev]);
-  };
-
-  const updateListing = (id, updates) => {
-    setListings(prev => prev.map(l => l.id === id ? { ...l, ...updates } : l));
-  };
-
-  const deleteListing = (id) => {
-    setListings(prev => prev.filter(l => l.id !== id));
-  };
-
-  const getShopListings = (shopId) => {
-    return listings.filter(l => l.shopId === shopId);
-  };
-
-  // Favorites logic
   const [favorites, setFavorites] = useState(() => {
     const saved = localStorage.getItem('eastlify_favorites');
     try {
-        return saved ? JSON.parse(saved) : [];
+      return saved ? JSON.parse(saved) : [];
     } catch {
-        return [];
+      return [];
     }
   });
 
+  // Fetch shops from API
+  const fetchShops = useCallback(async (filters = {}) => {
+    setShopsLoading(true);
+    try {
+      const data = await shopsApi.getShops(filters);
+      setShops(data.shops);
+      setShopsError(null);
+    } catch (error) {
+      console.error('Failed to fetch shops:', error);
+      setShopsError(error.response?.data?.message || error.message);
+    } finally {
+      setShopsLoading(false);
+    }
+  }, []);
+
+  // Initial shops fetch
+  useEffect(() => {
+    fetchShops();
+  }, [fetchShops]);
+
+  // Verify token and fetch profile on mount
+  useEffect(() => {
+    const initAuth = async () => {
+      if (token) {
+        try {
+          const user = await authApi.getProfile(token);
+          setCurrentUser(user);
+        } catch (error) {
+          console.error('Auth check failed:', error);
+          localStorage.removeItem('eastlify_token');
+          setToken(null);
+        }
+      }
+      setAuthLoading(false);
+    };
+
+    initAuth();
+  }, [token]);
+
+  // Fetch my listings (for dashboard)
+  const fetchMyListings = useCallback(async () => {
+    if (!token) return;
+    setListingsLoading(true);
+    try {
+      const data = await productsApi.getMyProducts(token);
+      setMyListings(data);
+    } catch (error) {
+      console.error('Failed to fetch my listings:', error);
+    } finally {
+      setListingsLoading(false);
+    }
+  }, [token]);
+
+  // Fetch full details of my shop
+  const fetchMyShop = useCallback(async () => {
+    if (!token) return;
+    try {
+      const data = await shopsApi.getMyShop(token);
+      setCurrentUser(prev => ({ ...prev, shop: data }));
+      return data;
+    } catch (error) {
+      console.error('Failed to fetch my shop:', error);
+    }
+  }, [token]);
+
+  // Fetch listings for a specific shop (for customer view)
+  const fetchShopListings = useCallback(async (shopId) => {
+    setListingsLoading(true);
+    try {
+      const data = await productsApi.getProducts({ shop: shopId });
+      setListings(data.products);
+    } catch (error) {
+      console.error('Failed to fetch shop listings:', error);
+    } finally {
+      setListingsLoading(false);
+    }
+  }, []);
+
+  // Persist favorites
   useEffect(() => {
     localStorage.setItem('eastlify_favorites', JSON.stringify(favorites));
   }, [favorites]);
+
+  const login = async (email, password) => {
+    try {
+      const data = await authApi.login({ email, password });
+      localStorage.setItem('eastlify_token', data.token);
+      setToken(data.token);
+      setCurrentUser(data);
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('eastlify_token');
+    setToken(null);
+    setCurrentUser(null);
+  };
+
+  const registerShop = async (regData) => {
+    try {
+      const data = await authApi.register(regData);
+      localStorage.setItem('eastlify_token', data.token);
+      setToken(data.token);
+      setCurrentUser(data);
+      // Refresh shops list after registration
+      fetchShops();
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
+  };
+
+  const updateShop = async (updates) => {
+    if (!currentUser || !currentUser.shop?._id) return { success: false, message: 'No shop associated' };
+    
+    try {
+      const updatedShop = await shopsApi.updateShop(currentUser.shop._id, updates, token);
+      
+      const updatedUser = { 
+        ...currentUser, 
+        shop: updatedShop
+      };
+      setCurrentUser(updatedUser);
+      
+      // Update in the local shops list too
+      setShops(prev => prev.map(s => s._id === updatedShop._id ? updatedShop : s));
+      
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
+  };
+
+  const deleteShop = async (id) => {
+    if (!token) return { success: false, message: 'No token' };
+    try {
+      await shopsApi.deleteShop(id, token);
+      // Remove from local list
+      setShops(prev => prev.filter(s => s._id !== id));
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
+  };
+
+  // Other utility functions (listing logic, favorites logic)
+  const addListing = async (newListing) => {
+    try {
+      const savedListing = await productsApi.createProduct(newListing, token);
+      setMyListings(prev => [savedListing, ...prev]);
+      return { success: true, listing: savedListing };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
+  };
+
+  const updateListing = async (id, updates) => {
+    try {
+      const updatedListing = await productsApi.updateProduct(id, updates, token);
+      setMyListings(prev => prev.map(l => l._id === id ? updatedListing : l));
+      return { success: true, listing: updatedListing };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
+  };
+
+  const deleteListing = async (id) => {
+    try {
+      await productsApi.deleteProduct(id, token);
+      setMyListings(prev => prev.filter(l => l._id !== id));
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
+  };
+
+  const getShopListings = (shopId) => {
+    // If it's my shop, return myListings, otherwise return public listings
+    if (currentUser?.shop?._id === shopId) return myListings;
+    return listings;
+  };
 
   const toggleFavorite = (shopId) => {
     setFavorites(prev => {
@@ -86,47 +224,11 @@ export function ShopProvider({ children }) {
 
   const isFavorite = (shopId) => favorites.includes(shopId);
 
-  const login = (phone) => {
-    const foundShop = shops.find(s => s.phone === phone);
-    if (foundShop) {
-      setCurrentUser(foundShop);
-      return true;
-    }
-    return false;
-  };
-
-  const logout = () => {
-    setCurrentUser(null);
-  };
-
-  const registerShop = (newShop) => {
-    const shopWithId = { 
-      ...newShop, 
-      id: Date.now().toString(), 
-      totalCalls: 0, 
-      orders: 0, 
-      sales: 0,
-       // Default image if none provided
-      image: newShop.image || "https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?auto=format&fit=crop&q=80&w=800"
-    };
-    
-    setShops(prev => [...prev, shopWithId]);
-    setCurrentUser(shopWithId);
-    return shopWithId;
-  };
-
-  const updateShop = (updates) => {
-    if (!currentUser) return;
-    const updated = { ...currentUser, ...updates };
-    setShops(prev => prev.map(s => s.id === currentUser.id ? updated : s));
-    setCurrentUser(updated);
-  };
-
   return (
     <ShopContext.Provider value={{ 
-      shops, currentUser, login, logout, registerShop, updateShop, 
+      shops, shopsLoading, shopsError, fetchShops, currentUser, authLoading, login, logout, registerShop, updateShop, deleteShop,
       favorites, toggleFavorite, isFavorite,
-      listings, addListing, updateListing, deleteListing, getShopListings 
+      listings, myListings, listingsLoading, addListing, updateListing, deleteListing, getShopListings, fetchMyListings, fetchShopListings, fetchMyShop
     }}>
       {children}
     </ShopContext.Provider>

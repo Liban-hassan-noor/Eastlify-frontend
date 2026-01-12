@@ -1,25 +1,35 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useShop } from '../../../context/ShopContext';
-import { Plus, Edit, Trash2, Tag, Search, AlertCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, Tag, Search, AlertCircle, Loader2 } from 'lucide-react';
 import ListingForm from './ListingForm';
 
 export default function Listings() {
-  const { currentUser, getShopListings, deleteListing } = useShop();
+  const { currentUser, myListings, listings, listingsLoading, fetchMyListings, deleteListing } = useShop();
   const [isEditing, setIsEditing] = useState(false);
   const [editingListing, setEditingListing] = useState(null);
   
-  if (!currentUser) return <div>Loading...</div>;
+  useEffect(() => {
+    fetchMyListings();
+  }, [fetchMyListings]);
 
-  const listings = getShopListings(currentUser.id);
+  if (!currentUser) return (
+    <div className="flex flex-col items-center justify-center py-20 gap-4">
+      <Loader2 className="w-10 h-10 text-amber-600 animate-spin" />
+      <p className="text-gray-500">Loading your shop...</p>
+    </div>
+  );
 
   const handleEdit = (listing) => {
     setEditingListing(listing);
     setIsEditing(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (confirm('Are you sure you want to delete this listing?')) {
-      deleteListing(id);
+      const result = await deleteListing(id);
+      if (!result.success) {
+        alert('Failed to delete: ' + result.message);
+      }
     }
   };
 
@@ -52,34 +62,38 @@ export default function Listings() {
         </button>
       </div>
 
-      {listings.length > 0 ? (
+      {listingsLoading ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <Loader2 className="w-10 h-10 text-amber-600 animate-spin" />
+          <p className="text-gray-500">Updating inventory...</p>
+        </div>
+      ) : myListings.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-           {listings.map(listing => (
-             <div key={listing.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition overflow-hidden group">
+           {myListings.map((listing, index) => (
+             <div key={listing._id || index} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition overflow-hidden group">
                 <div className="relative h-48 bg-gray-50">
-                  <img src={listing.images[0]} alt={listing.title} className="w-full h-full object-cover" />
-                  {listing.isOnOffer && (
+                  <img src={listing.images?.[0] || 'https://images.unsplash.com/photo-1581417478175-a9ef18f210c1?auto=format&fit=crop&q=80&w=800'} alt={listing.name} className="w-full h-full object-cover" />
+                  {listing.compareAtPrice > listing.price && (
                     <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-sm">
                       OFFER
                     </div>
                   )}
                   <div className={`absolute top-2 right-2 px-2 py-1 rounded-lg text-xs font-bold shadow-sm ${
-                     listing.availability === 'In Stock' ? 'bg-green-100 text-green-700' : 
-                     listing.availability === 'Limited' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'
+                     listing.inStock ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
                   }`}>
-                    {listing.availability}
+                    {listing.inStock ? 'In Stock' : 'Out of Stock'}
                   </div>
                 </div>
                 
                 <div className="p-4">
-                   <h3 className="font-bold text-gray-900 mb-1 truncate">{listing.title}</h3>
+                   <h3 className="font-bold text-gray-900 mb-1 truncate">{listing.name}</h3>
                    <div className="flex items-center gap-2 mb-3">
                       <span className="text-amber-600 font-bold">
-                        KES {listing.isOnOffer ? listing.offerPrice.toLocaleString() : listing.price.toLocaleString()}
+                        KES {listing.price?.toLocaleString()}
                       </span>
-                      {listing.isOnOffer && (
+                      {listing.compareAtPrice > listing.price && (
                         <span className="text-gray-400 text-sm line-through decoration-red-500/50">
-                          {listing.price.toLocaleString()}
+                          {listing.compareAtPrice?.toLocaleString()}
                         </span>
                       )}
                    </div>
@@ -92,7 +106,7 @@ export default function Listings() {
                          <Edit className="w-4 h-4" /> Edit
                       </button>
                       <button 
-                         onClick={() => handleDelete(listing.id)}
+                         onClick={() => handleDelete(listing._id)}
                          className="px-3 py-2 rounded-lg text-red-500 hover:bg-red-50 border border-transparent hover:border-red-100 transition"
                       >
                          <Trash2 className="w-4 h-4" />

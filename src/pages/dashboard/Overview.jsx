@@ -7,9 +7,9 @@ export default function Overview() {
   if (!currentUser) return <div>Loading...</div>;
 
   const stats = [
-    { label: 'Total Calls', value: currentUser.totalCalls, icon: Phone, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'Orders (Est)', value: currentUser.orders, icon: ShoppingBag, color: 'text-amber-600', bg: 'bg-amber-50' },
-    { label: 'Sales (Est)', value: `KSh ${currentUser.sales?.toLocaleString()}`, icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50' },
+    { label: 'Total Calls', value: currentUser.shop?.totalCalls || 0, icon: Phone, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { label: 'Orders (Est)', value: currentUser.shop?.orders || 0, icon: ShoppingBag, color: 'text-amber-600', bg: 'bg-amber-50' },
+    { label: 'Sales (Est)', value: `KSh ${(currentUser.shop?.sales || 0).toLocaleString()}`, icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50' },
   ];
 
   return (
