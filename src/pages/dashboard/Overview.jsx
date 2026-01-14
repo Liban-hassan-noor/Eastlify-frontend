@@ -1,15 +1,19 @@
+import { useEffect } from 'react';
 import { useShop } from '../../context/ShopContext';
 import { Phone, ShoppingBag, TrendingUp, ArrowUpRight } from 'lucide-react';
 
 export default function Overview() {
-  const { currentUser } = useShop();
+  const { currentUser, activities, fetchActivities } = useShop();
+
+  useEffect(() => {
+    fetchActivities();
+  }, []);
 
   if (!currentUser) return <div>Loading...</div>;
 
   const stats = [
     { label: 'Total Calls', value: currentUser.shop?.totalCalls || 0, icon: Phone, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'Orders (Est)', value: currentUser.shop?.orders || 0, icon: ShoppingBag, color: 'text-amber-600', bg: 'bg-amber-50' },
-    { label: 'Sales (Est)', value: `KSh ${(currentUser.shop?.sales || 0).toLocaleString()}`, icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50' },
+    { label: 'Total Sales', value: `KSh ${(currentUser.shop?.sales || 0).toLocaleString()}`, icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50' },
   ];
 
   return (
@@ -35,22 +39,36 @@ export default function Overview() {
                 <button className="text-amber-600 text-sm font-bold">View All</button>
              </div>
              <div className="space-y-4">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 transition">
-                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
-                           <Phone className="w-4 h-4" />
-                        </div>
-                        <div>
-                           <div className="font-bold text-gray-900">Incoming Call</div>
-                           <div className="text-xs text-gray-400">2 hours ago</div>
-                        </div>
-                     </div>
-                     <div className="text-sm font-medium text-gray-600">
-                        +254 7XX...
-                     </div>
-                  </div>
-                ))}
+                {activities.length > 0 ? activities.map((activity, i) => (
+                   <div key={activity._id || i} className="flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 transition">
+                      <div className="flex items-center gap-3">
+                         <div className={`w-10 h-10 ${
+                           activity.type === 'call' ? 'bg-blue-100 text-blue-600' : 
+                           activity.type === 'whatsapp' ? 'bg-green-100 text-green-600' : 
+                           'bg-amber-100 text-amber-600'
+                         } rounded-full flex items-center justify-center`}>
+                            {activity.type === 'sale' ? <ShoppingBag className="w-4 h-4" /> : <Phone className="w-4 h-4" />}
+                         </div>
+                         <div>
+                            <div className="font-bold text-gray-900 capitalize">
+                              {activity.type === 'whatsapp' ? 'WhatsApp Click' : 
+                               activity.type === 'call' ? 'Direct Call' : 
+                               `New Sale: ${activity.item || 'Item'}`}
+                            </div>
+                            <div className="text-xs text-gray-400">
+                              {new Date(activity.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(activity.createdAt).toLocaleDateString()}
+                            </div>
+                         </div>
+                      </div>
+                      <div className="text-sm font-medium text-gray-600">
+                         {activity.type === 'sale' ? `KES ${activity.amount?.toLocaleString()}` : activity.detail}
+                      </div>
+                   </div>
+                 )) : (
+                   <div className="text-center py-10 text-gray-400 text-sm italic">
+                     No recent activity yet.
+                   </div>
+                 )}
              </div>
           </div>
           

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL 
 
 export const getShops = async (filters = {}) => {
   const { category, street, search } = filters;
@@ -74,3 +74,23 @@ export const deleteShop = async (id, token) => {
   });
   return response.data;
 };
+
+export const recordActivity = async (shopId, activityData) => {
+  const response = await axios.post(`${API_URL}/shops/${shopId}/activity`, activityData);
+  return response.data;
+};
+
+export const recordSale = async (shopId, saleData, token) => {
+  const response = await axios.post(`${API_URL}/shops/${shopId}/sale`, { ...saleData, type: 'sale' }, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export const fetchActivities = async (shopId, token) => {
+  const response = await axios.get(`${API_URL}/shops/${shopId}/activities`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+

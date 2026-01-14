@@ -5,7 +5,7 @@ import { Camera, Loader2, Save, MapPin, Phone, Mail, User, Building2, MessageSqu
 import { MOCK_STREETS, MOCK_CATEGORIES } from '../../data/mockData';
 
 export default function MyShop() {
-  const { currentUser, updateShop, deleteShop, logout, fetchMyShop } = useShop();
+  const { currentUser, updateShop, deleteShop, logout, fetchMyShop, updateProfile } = useShop();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
@@ -26,9 +26,12 @@ export default function MyShop() {
 
   useEffect(() => {
     if (currentUser?.shop) {
-      setFormData(currentUser.shop);
+      setFormData({
+        ...currentUser.shop,
+        ownerName: currentUser.name
+      });
     }
-  }, [currentUser?.shop]);
+  }, [currentUser?.shop, currentUser?.name]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,7 +40,20 @@ export default function MyShop() {
     
     // Remove transient UI fields if they exist before sending to API
     const dataToSend = { ...formData };
+    const newOwnerName = dataToSend.ownerName;
+    delete dataToSend.ownerName; // Don't send ownerName to shop update API
     
+    // 1. Update Profile if name changed
+    if (newOwnerName !== currentUser.name) {
+      const profileResult = await updateProfile({ name: newOwnerName });
+      if (!profileResult.success) {
+        setStatus({ type: 'error', message: profileResult.message || 'Failed to update owner name' });
+        setLoading(false);
+        return;
+      }
+    }
+
+    // 2. Update Shop
     const result = await updateShop(dataToSend);
     
     if (result.success) {

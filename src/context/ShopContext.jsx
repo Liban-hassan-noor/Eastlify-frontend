@@ -7,6 +7,7 @@ const ShopContext = createContext();
 
 export function ShopProvider({ children }) {
   const [shops, setShops] = useState([]);
+  const [activities, setActivities] = useState([]);
   const [shopsLoading, setShopsLoading] = useState(true);
   const [shopsError, setShopsError] = useState(null);
 
@@ -143,6 +144,16 @@ export function ShopProvider({ children }) {
     }
   };
 
+  const updateProfile = async (userData) => {
+    try {
+      const updatedUser = await authApi.updateProfile(userData, token);
+      setCurrentUser(prev => ({ ...prev, ...updatedUser }));
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
+  };
+
   const updateShop = async (updates) => {
     if (!currentUser || !currentUser.shop?._id) return { success: false, message: 'No shop associated' };
     
@@ -158,6 +169,55 @@ export function ShopProvider({ children }) {
       // Update in the local shops list too
       setShops(prev => prev.map(s => s._id === updatedShop._id ? updatedShop : s));
       
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
+  };
+
+  const recordActivity = async (activityData, shopId = null) => {
+    const targetShopId = shopId || currentUser?.shop?._id;
+    if (!targetShopId) return { success: false, message: 'Shop ID required' };
+    
+    try {
+      const data = await shopsApi.recordActivity(targetShopId, activityData);
+      // If it's the owner's shop, we can update the stats locally
+      if (currentUser?.shop?._id === targetShopId) {
+        setCurrentUser(prev => ({
+          ...prev,
+          shop: { ...prev.shop, ...data.shop }
+        }));
+        // Update activities feed
+        setActivities(prev => [data.activity, ...prev].slice(0, 10));
+      }
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
+  };
+
+  const recordSale = async (saleData) => {
+    if (!currentUser?.shop?._id) return { success: false, message: 'No shop associated' };
+    
+    try {
+      const data = await shopsApi.recordSale(currentUser.shop._id, saleData, token);
+      setCurrentUser(prev => ({
+        ...prev,
+        shop: { ...prev.shop, ...data.shop }
+      }));
+      setActivities(prev => [data.activity, ...prev].slice(0, 10));
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
+  };
+
+  const fetchActivities = async () => {
+    if (!currentUser?.shop?._id) return { success: false, message: 'No shop associated' };
+    
+    try {
+      const data = await shopsApi.fetchActivities(currentUser.shop._id, token);
+      setActivities(data);
       return { success: true };
     } catch (error) {
       return { success: false, message: error.response?.data?.message || error.message };
@@ -228,7 +288,9 @@ export function ShopProvider({ children }) {
     <ShopContext.Provider value={{ 
       shops, shopsLoading, shopsError, fetchShops, currentUser, authLoading, login, logout, registerShop, updateShop, deleteShop,
       favorites, toggleFavorite, isFavorite,
-      listings, myListings, listingsLoading, addListing, updateListing, deleteListing, getShopListings, fetchMyListings, fetchShopListings, fetchMyShop
+      listings, myListings, listingsLoading, addListing, updateListing, deleteListing, getShopListings, fetchMyListings, fetchShopListings, fetchMyShop,
+      updateProfile,
+      activities, recordActivity, recordSale, fetchActivities
     }}>
       {children}
     </ShopContext.Provider>

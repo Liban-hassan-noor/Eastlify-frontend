@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL 
 
 export const getProducts = async (filters = {}) => {
   const { category, shop, search } = filters;
@@ -52,7 +52,7 @@ export const createProduct = async (productData, token) => {
       });
     } else if (key === 'tags' && Array.isArray(productData[key])) {
       formData.append(key, JSON.stringify(productData[key]));
-    } else {
+    } else if (productData[key] !== null && productData[key] !== undefined) {
       formData.append(key, productData[key]);
     }
   });
@@ -84,7 +84,7 @@ export const updateProduct = async (id, productData, token) => {
       });
     } else if (key === 'tags' && Array.isArray(productData[key])) {
       formData.append(key, JSON.stringify(productData[key]));
-    } else {
+    } else if (productData[key] !== null && productData[key] !== undefined) {
       formData.append(key, productData[key]);
     }
   });

@@ -6,7 +6,7 @@ import * as shopsApi from '../../api/shops';
 
 export default function ShopDetails() {
   const { id } = useParams();
-  const { listings, listingsLoading, fetchShopListings } = useShop();
+  const { listings, listingsLoading, fetchShopListings, recordActivity } = useShop();
   
   const [shop, setShop] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -28,6 +28,14 @@ export default function ShopDetails() {
     };
     loadData();
   }, [id, fetchShopListings]);
+
+  const handleContact = async (type) => {
+    if (!shop) return;
+    await recordActivity({
+      type,
+      detail: shop.phone,
+    }, shop._id);
+  };
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-40 gap-4">
@@ -149,6 +157,7 @@ export default function ShopDetails() {
                             href={`https://wa.me/${shop.phone?.replace('+', '')}?text=Hi, I am interested in ${item.name} at ${shop.shopName}`}
                             target="_blank"
                             rel="noopener noreferrer"
+                            onClick={() => handleContact('whatsapp')}
                             className="flex items-center justify-center gap-2 w-full py-2.5 bg-gray-900 text-white text-xs font-bold rounded-xl hover:bg-black transition shadow-md active:scale-95"
                           >
                             <MessageCircle className="w-4 h-4" />
@@ -179,6 +188,7 @@ export default function ShopDetails() {
                   <div className="space-y-3">
                      <a 
                        href={`tel:${shop.phone}`}
+                       onClick={() => handleContact('call')}
                        className="flex items-center justify-center gap-3 w-full py-4 bg-green-600 text-white rounded-2xl font-extrabold text-lg hover:bg-green-700 transition shadow-lg shadow-green-600/30 active:scale-95 transform group-hover:scale-[1.02]"
                      >
                        <Phone className="w-6 h-6 fill-current animate-bounce" />
@@ -189,6 +199,7 @@ export default function ShopDetails() {
                        href={`https://wa.me/${shop.phone?.replace('+', '')}`}
                        target="_blank"
                        rel="noopener noreferrer"
+                       onClick={() => handleContact('whatsapp')}
                        className="flex items-center justify-center gap-3 w-full py-4 bg-gray-900 text-white rounded-2xl font-extrabold hover:bg-black transition shadow-lg active:scale-95"
                      >
                        <MessageCircle className="w-6 h-6" />
