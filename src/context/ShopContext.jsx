@@ -52,14 +52,19 @@ export function ShopProvider({ children }) {
   // Verify token and fetch profile on mount
   useEffect(() => {
     const initAuth = async () => {
-      if (token) {
+      if (token && !currentUser) { // Only fetch if we don't have a user already
         try {
+          // console.log('initAuth: Fetching profile...');
           const user = await authApi.getProfile(token);
           setCurrentUser(user);
         } catch (error) {
           console.error('Auth check failed:', error);
-          localStorage.removeItem('eastlify_token');
-          setToken(null);
+          // Check if it's a 401 unauthorized
+          if (error.status === 401) {
+            localStorage.removeItem('eastlify_token');
+            setToken(null);
+            setCurrentUser(null);
+          }
         }
       }
       setAuthLoading(false);
@@ -87,7 +92,7 @@ export function ShopProvider({ children }) {
     if (!token) return;
     try {
       const data = await shopsApi.getMyShop(token);
-      setCurrentUser(prev => ({ ...prev, shop: data }));
+      setCurrentUser(prev => prev ? { ...prev, shop: data } : { shop: data });
       return data;
     } catch (error) {
       console.error('Failed to fetch my shop:', error);
@@ -136,23 +141,35 @@ export function ShopProvider({ children }) {
       localStorage.setItem('eastlify_token', data.token);
       setToken(data.token);
       setCurrentUser(data);
+      
       // Refresh shops list after registration
       fetchShops();
+      
       // Pre-emptively fetch listings and activities if needed
       if (data.shop?._id) {
-        productsApi.getMyProducts(data.token).then(setMyListings);
-        shopsApi.fetchActivities(data.shop._id, data.token).then(setActivities);
+        // Fetch these in the background but make sure they update our state
+        productsApi.getMyProducts(data.token)
+          .then(listings => setMyListings(listings))
+          .catch(err => console.error('Failed to fetch initial listings:', err));
+          
+        shopsApi.fetchActivities(data.shop._id, data.token)
+          .then(acts => setActivities(acts))
+          .catch(err => console.error('Failed to fetch initial activities:', err));
+          
+        // Re-confirm shop object is fully populated if needed
+        // but the register response should already have it.
       }
       return { success: true };
     } catch (error) {
-      return { success: false, message: error.response?.data?.message || error.message };
+      const message = error.response?.data?.message || error.message || 'Registration failed';
+      return { success: false, message };
     }
   };
 
   const updateProfile = async (userData) => {
     try {
       const updatedUser = await authApi.updateProfile(userData, token);
-      setCurrentUser(prev => ({ ...prev, ...updatedUser }));
+      setCurrentUser(prev => prev ? { ...prev, ...updatedUser } : updatedUser);
       return { success: true };
     } catch (error) {
       return { success: false, message: error.response?.data?.message || error.message };
@@ -182,10 +199,10 @@ export function ShopProvider({ children }) {
       const data = await shopsApi.recordActivity(targetShopId, activityData);
       // If it's the owner's shop, we can update the stats locally
       if (currentUser?.shop?._id === targetShopId) {
-        setCurrentUser(prev => ({
+        setCurrentUser(prev => prev ? {
           ...prev,
           shop: { ...prev.shop, ...data.shop }
-        }));
+        } : prev);
         // Update activities feed
         setActivities(prev => [data.activity, ...prev].slice(0, 10));
       }
@@ -200,10 +217,10 @@ export function ShopProvider({ children }) {
     
     try {
       const data = await shopsApi.recordSale(currentUser.shop._id, saleData, token);
-      setCurrentUser(prev => ({
+      setCurrentUser(prev => prev ? {
         ...prev,
         shop: { ...prev.shop, ...data.shop }
-      }));
+      } : prev);
       setActivities(prev => [data.activity, ...prev].slice(0, 10));
       return { success: true };
     } catch (error) {

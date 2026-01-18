@@ -27,7 +27,12 @@ export default function DashboardLayout() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-         <div className="text-sm text-gray-500 font-medium">Welcome back, <span className="text-gray-900 font-bold">{currentUser?.name}</span></div>
+          <div className="text-sm text-gray-500 font-medium">
+            Welcome back, <span className="text-gray-900 font-bold">{currentUser?.name}</span>
+            {currentUser?.shop?.shopName && (
+              <span className="text-gray-400"> • {currentUser.shop.shopName}</span>
+            )}
+          </div>
       </div>
 
       {/* Tab Nav */}

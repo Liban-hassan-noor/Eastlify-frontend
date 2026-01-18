@@ -12,7 +12,9 @@ export const register = async (userData) => {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || 'Registration failed');
+    const error = new Error(data.message || 'Registration failed');
+    error.status = response.status;
+    throw error;
   }
 
   return data;
@@ -30,7 +32,9 @@ export const login = async (credentials) => {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || 'Login failed');
+    const error = new Error(data.message || 'Login failed');
+    error.status = response.status;
+    throw error;
   }
 
   return data;
@@ -47,7 +51,9 @@ export const getProfile = async (token) => {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || 'Failed to fetch profile');
+    const error = new Error(data.message || 'Failed to fetch profile');
+    error.status = response.status;
+    throw error;
   }
 
   return data;
@@ -66,7 +72,9 @@ export const updateProfile = async (userData, token) => {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || 'Update profile failed');
+    const error = new Error(data.message || 'Update profile failed');
+    error.status = response.status;
+    throw error;
   }
 
   return data;
