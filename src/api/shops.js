@@ -55,8 +55,7 @@ export const updateShop = async (id, shopData, token) => {
 
   const response = await axios.put(`${API_URL}/shops/${id}`, formData, {
     headers: { 
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'multipart/form-data'
+      Authorization: `Bearer ${token}`
     }
   });
   return response.data;
