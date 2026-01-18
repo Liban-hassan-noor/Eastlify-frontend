@@ -17,7 +17,7 @@ export default function ShopCard({ shop }) {
   return (
     <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col h-full group relative">
       <div className="relative h-56 bg-gray-100 overflow-hidden">
-        {shop.profileImage ? (
+        {(shop.profileImage || shop.coverImage) ? (
           <ImageCarousel 
             images={[shop.profileImage, shop.coverImage].filter(Boolean)} 
             aspectRatio="w-full h-full"
