@@ -13,8 +13,10 @@ export default function Sales() {
   });
 
   useEffect(() => {
-    fetchActivities();
-  }, []);
+    if (currentUser?.shop?._id) {
+      fetchActivities();
+    }
+  }, [fetchActivities, currentUser?.shop?._id]);
 
   const sales = (activities || []).filter(a => a.type === 'sale');
   const total = (currentUser?.shop?.sales || 0);

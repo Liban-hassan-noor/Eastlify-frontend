@@ -6,8 +6,10 @@ export default function Overview() {
   const { currentUser, activities, fetchActivities } = useShop();
 
   useEffect(() => {
-    fetchActivities();
-  }, []);
+    if (currentUser?.shop?._id) {
+      fetchActivities();
+    }
+  }, [fetchActivities, currentUser?.shop?._id]);
 
   if (!currentUser) return <div>Loading...</div>;
 

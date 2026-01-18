@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useShop } from '../../context/ShopContext';
 import { Phone, MapPin, Star, Share2, ArrowLeft, Package, MessageCircle, Loader2, X, Store } from 'lucide-react';
 import * as shopsApi from '../../api/shops';
+import ImageCarousel from '../../components/ImageCarousel';
 
 export default function ShopDetails() {
   const { id } = useParams();
@@ -61,28 +62,33 @@ export default function ShopDetails() {
         <ArrowLeft className="w-4 h-4" /> Back to Boutiques
       </Link>
 
-      {/* Header Image */}
-      <div className="relative h-64 sm:h-96 rounded-3xl overflow-hidden bg-gray-100 shadow-lg border border-gray-100">
-         {shop.profileImage ? (
-           <img src={shop.profileImage} alt={shop.shopName} className="w-full h-full object-cover" />
+      {/* Header Image Section */}
+      <div className="relative h-72 sm:h-96 lg:h-[32rem] rounded-[2.5rem] overflow-hidden bg-gray-100 shadow-2xl border border-gray-100 group/header">
+         {shop.profileImage || shop.coverImage ? (
+           <ImageCarousel 
+             images={[shop.profileImage, shop.coverImage].filter(Boolean)} 
+             aspectRatio="w-full h-full"
+             autoSlide={true}
+             autoSlideInterval={6000}
+           />
          ) : (
            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 text-gray-300">
-              <Store className="w-20 h-20 opacity-20" />
+              <Store className="w-24 h-24 opacity-10" />
            </div>
          )}
-         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex items-end p-6 sm:p-10">
+         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none flex items-end p-8 sm:p-12">
             <div className="text-white w-full">
-               <div className="flex items-start justify-between gap-4">
-                  <div>
-                     <h1 className="text-3xl sm:text-5xl font-extrabold mb-3 drop-shadow-md">{shop.shopName}</h1>
+               <div className="flex items-end justify-between gap-6 flex-wrap">
+                  <div className="space-y-4">
+                     <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black mb-2 drop-shadow-2xl tracking-tight">{shop.shopName}</h1>
                      <div className="flex items-center gap-4 text-white/90">
-                        <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full text-sm font-bold border border-white/20">
-                           <MapPin className="w-4 h-4" />
+                        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-xl px-6 py-2.5 rounded-2xl text-sm font-black border border-white/20 shadow-xl">
+                           <MapPin className="w-5 h-5 text-amber-500" />
                            {shop.street}
                         </div>
-                        <div className="flex items-center gap-1.5 text-amber-400 font-bold">
-                           <Star className="w-5 h-5 fill-amber-400" />
-                           {shop.rating || 'New Shop'}
+                        <div className="flex items-center gap-2 bg-amber-500 text-white px-6 py-2.5 rounded-2xl text-sm font-black shadow-xl">
+                           <Star className="w-5 h-5 fill-white" />
+                           {shop.rating || 'Featured Shop'}
                         </div>
                      </div>
                   </div>
@@ -91,15 +97,19 @@ export default function ShopDetails() {
          </div>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-8 items-start">
-         <div className="md:col-span-2 space-y-8">
-            <section className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm leading-relaxed">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">About the Boutique</h2>
-              <p className="text-gray-600 text-lg">{shop.description || 'Welcome to our boutique in Eastleigh. We pride ourselves on quality and service.'}</p>
+      <div className="grid md:grid-cols-3 gap-10 items-start mt-12">
+          <div className="md:col-span-2 space-y-10">
+            <section className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-sm leading-relaxed relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-amber-50 rounded-full blur-3xl -mr-20 -mt-20 opacity-50"></div>
+              <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
+                <Store className="w-7 h-7 text-amber-600" />
+                About the Boutique
+              </h2>
+              <p className="text-gray-600 text-xl font-medium leading-[1.8]">{shop.description || 'Welcome to our boutique in Eastleigh. We pride ourselves on quality and service.'}</p>
               
-              <div className="mt-6 flex flex-wrap gap-2">
+              <div className="mt-8 flex flex-wrap gap-3">
                 {(shop.categories || []).map(cat => (
-                   <span key={cat} className="px-4 py-2 bg-amber-50 text-amber-700 rounded-xl text-sm font-bold border border-amber-100">
+                   <span key={cat} className="px-5 py-2.5 bg-gray-50 text-gray-700 rounded-2xl text-xs font-black uppercase tracking-widest border border-gray-100 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-100 transition-colors">
                       {cat}
                    </span>
                 ))}
@@ -123,49 +133,64 @@ export default function ShopDetails() {
                      <p className="text-gray-500 font-bold">Polishing items...</p>
                   </div>
                ) : listings.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-                      {listings.map((item, index) => (
-                        <div key={item._id || index} className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all group">
-                          <div className="aspect-square bg-gray-50 rounded-2xl mb-4 overflow-hidden relative border border-gray-50">
-                              <img 
-                                src={item.images?.[0] || 'https://images.unsplash.com/photo-1581417478175-a9ef18f210c1?auto=format&fit=crop&q=80&w=800'} 
-                                alt={item.name}
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                loading="lazy"
+                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                       {listings.map((item, index) => (
+                         <div key={item._id || index} className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-2xl hover:translate-y-[-8px] transition-all duration-500 group overflow-hidden flex flex-col">
+                           <div className="relative aspect-[4/5] overflow-hidden">
+                              <ImageCarousel 
+                                images={item.images} 
+                                aspectRatio="h-full w-full"
+                                autoSlide={true}
                               />
-                              {(item.compareAtPrice && item.compareAtPrice > item.price) && (
-                                <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sm">
-                                  OFFER
+                               {(item.compareAtPrice && item.compareAtPrice > item.price) && (
+                                 <div className="absolute top-4 left-4 bg-amber-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg z-10 uppercase tracking-wider">
+                                   Special Offer
+                                 </div>
+                               )}
+                               {!item.inStock && (
+                                 <div className="absolute inset-0 bg-black/60 backdrop-blur-[4px] flex items-center justify-center p-4 z-20">
+                                    <span className="text-white text-sm font-black uppercase tracking-widest text-center border-2 border-white/30 px-6 py-2 rounded-full backdrop-blur-md">Sold Out</span>
+                                 </div>
+                               )}
+                           </div>
+                           
+                           <div className="p-6 flex flex-col flex-1">
+                              <div className="font-black text-gray-900 mb-2 text-xl group-hover:text-amber-600 transition-colors line-clamp-1">{item.name}</div>
+                              <p className="text-gray-500 text-sm line-clamp-2 mb-6 font-medium leading-relaxed">
+                                {item.description}
+                              </p>
+                              
+                              <div className="mt-auto space-y-4">
+                                <div className="flex items-end justify-between">
+                                   <div className="space-y-1">
+                                      <div className="text-amber-600 font-black text-2xl tracking-tight">
+                                        <span className="text-xs mr-1 opacity-70">KES</span>
+                                        {item.price?.toLocaleString()}
+                                      </div>
+                                      {(item.compareAtPrice && item.compareAtPrice > item.price) && (
+                                        <div className="text-xs text-gray-400 line-through font-bold opacity-60">KES {item.compareAtPrice?.toLocaleString()}</div>
+                                      )}
+                                   </div>
+                                   <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 px-2 py-1 rounded-md">
+                                      {item.category}
+                                   </div>
                                 </div>
-                              )}
-                              {!item.inStock && (
-                                <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4">
-                                   <span className="text-white text-xs font-black uppercase tracking-tighter text-center bg-black/40 px-3 py-1 rounded-full">Sold Out</span>
-                                </div>
-                              )}
-                          </div>
-                          <div className="font-bold text-gray-900 truncate mb-1 text-lg group-hover:text-amber-600 transition-colors">{item.name}</div>
-                          
-                          <div className="flex items-center gap-2 mb-4">
-                             <div className="text-amber-600 font-bold text-base">KES {item.price?.toLocaleString()}</div>
-                             {(item.compareAtPrice && item.compareAtPrice > item.price) && (
-                               <div className="text-xs text-gray-400 line-through font-medium">KES {item.compareAtPrice?.toLocaleString()}</div>
-                             )}
-                          </div>
-
-                          <a 
-                            href={`https://wa.me/${shop.phone?.replace('+', '')}?text=Hi, I am interested in ${item.name} at ${shop.shopName}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={() => handleContact('whatsapp')}
-                            className="flex items-center justify-center gap-2 w-full py-2.5 bg-gray-900 text-white text-xs font-bold rounded-xl hover:bg-black transition shadow-md active:scale-95"
-                          >
-                            <MessageCircle className="w-4 h-4" />
-                            Interested
-                          </a>
-                        </div>
-                      ))}
-                  </div>
+      
+                                <a 
+                                  href={`https://wa.me/${shop.phone?.replace('+', '')}?text=Hi, I am interested in ${item.name} at ${shop.shopName}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={() => handleContact('whatsapp')}
+                                  className="flex items-center justify-center gap-2 w-full py-4 bg-gray-900 text-white text-sm font-black rounded-2xl hover:bg-black transition-all shadow-xl shadow-gray-900/10 active:scale-95 group-hover:bg-amber-600"
+                                >
+                                  <MessageCircle className="w-5 h-5" />
+                                  Chat with Seller
+                                </a>
+                              </div>
+                           </div>
+                         </div>
+                       ))}
+                   </div>
                ) : (
                   <div className="text-center py-20 bg-gray-50 rounded-3xl border border-gray-100 border-dashed">
                      <Package className="w-14 h-14 text-gray-300 mx-auto mb-4" />

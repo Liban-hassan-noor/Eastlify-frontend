@@ -138,6 +138,11 @@ export function ShopProvider({ children }) {
       setCurrentUser(data);
       // Refresh shops list after registration
       fetchShops();
+      // Pre-emptively fetch listings and activities if needed
+      if (data.shop?._id) {
+        productsApi.getMyProducts(data.token).then(setMyListings);
+        shopsApi.fetchActivities(data.shop._id, data.token).then(setActivities);
+      }
       return { success: true };
     } catch (error) {
       return { success: false, message: error.response?.data?.message || error.message };
@@ -153,6 +158,58 @@ export function ShopProvider({ children }) {
       return { success: false, message: error.response?.data?.message || error.message };
     }
   };
+
+  // Fetch activities for the current shop
+  const fetchActivities = useCallback(async () => {
+    const shopId = currentUser?.shop?._id;
+    if (!shopId || !token) return { success: false, message: 'Not authenticated or no shop' };
+    
+    try {
+      const data = await shopsApi.fetchActivities(shopId, token);
+      setActivities(data);
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to fetch activities:', error);
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
+  }, [currentUser?.shop?._id, token]);
+
+  const recordActivity = useCallback(async (activityData, shopId = null) => {
+    const targetShopId = shopId || currentUser?.shop?._id;
+    if (!targetShopId) return { success: false, message: 'Shop ID required' };
+    
+    try {
+      const data = await shopsApi.recordActivity(targetShopId, activityData);
+      // If it's the owner's shop, we can update the stats locally
+      if (currentUser?.shop?._id === targetShopId) {
+        setCurrentUser(prev => ({
+          ...prev,
+          shop: { ...prev.shop, ...data.shop }
+        }));
+        // Update activities feed
+        setActivities(prev => [data.activity, ...prev].slice(0, 10));
+      }
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
+  }, [currentUser?.shop?._id]);
+
+  const recordSale = useCallback(async (saleData) => {
+    if (!currentUser?.shop?._id || !token) return { success: false, message: 'Not authenticated' };
+    
+    try {
+      const data = await shopsApi.recordSale(currentUser.shop._id, saleData, token);
+      setCurrentUser(prev => ({
+        ...prev,
+        shop: { ...prev.shop, ...data.shop }
+      }));
+      setActivities(prev => [data.activity, ...prev].slice(0, 10));
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
+  }, [currentUser?.shop?._id, token]);
 
   const updateShop = async (updates) => {
     if (!currentUser || !currentUser.shop?._id) return { success: false, message: 'No shop associated' };
@@ -175,54 +232,7 @@ export function ShopProvider({ children }) {
     }
   };
 
-  const recordActivity = async (activityData, shopId = null) => {
-    const targetShopId = shopId || currentUser?.shop?._id;
-    if (!targetShopId) return { success: false, message: 'Shop ID required' };
-    
-    try {
-      const data = await shopsApi.recordActivity(targetShopId, activityData);
-      // If it's the owner's shop, we can update the stats locally
-      if (currentUser?.shop?._id === targetShopId) {
-        setCurrentUser(prev => ({
-          ...prev,
-          shop: { ...prev.shop, ...data.shop }
-        }));
-        // Update activities feed
-        setActivities(prev => [data.activity, ...prev].slice(0, 10));
-      }
-      return { success: true };
-    } catch (error) {
-      return { success: false, message: error.response?.data?.message || error.message };
-    }
-  };
 
-  const recordSale = async (saleData) => {
-    if (!currentUser?.shop?._id) return { success: false, message: 'No shop associated' };
-    
-    try {
-      const data = await shopsApi.recordSale(currentUser.shop._id, saleData, token);
-      setCurrentUser(prev => ({
-        ...prev,
-        shop: { ...prev.shop, ...data.shop }
-      }));
-      setActivities(prev => [data.activity, ...prev].slice(0, 10));
-      return { success: true };
-    } catch (error) {
-      return { success: false, message: error.response?.data?.message || error.message };
-    }
-  };
-
-  const fetchActivities = async () => {
-    if (!currentUser?.shop?._id) return { success: false, message: 'No shop associated' };
-    
-    try {
-      const data = await shopsApi.fetchActivities(currentUser.shop._id, token);
-      setActivities(data);
-      return { success: true };
-    } catch (error) {
-      return { success: false, message: error.response?.data?.message || error.message };
-    }
-  };
 
   const deleteShop = async (id) => {
     if (!token) return { success: false, message: 'No token' };

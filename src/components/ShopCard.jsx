@@ -1,6 +1,7 @@
 import { Phone, MapPin, Star, Heart, Store } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
+import ImageCarousel from './ImageCarousel';
 
 export default function ShopCard({ shop }) {
   const { isFavorite, toggleFavorite } = useShop();
@@ -14,14 +15,13 @@ export default function ShopCard({ shop }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col h-full group relative">
-      <div className="relative h-48 bg-gray-100 overflow-hidden">
+    <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col h-full group relative">
+      <div className="relative h-56 bg-gray-100 overflow-hidden">
         {shop.profileImage ? (
-          <img 
-            src={shop.profileImage} 
-            alt={shop.shopName}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            loading="lazy"
+          <ImageCarousel 
+            images={[shop.profileImage, shop.coverImage].filter(Boolean)} 
+            aspectRatio="w-full h-full"
+            autoSlide={true}
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-amber-50 text-amber-600">
