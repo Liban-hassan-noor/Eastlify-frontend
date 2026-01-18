@@ -34,22 +34,32 @@ const dataURLtoBlob = (dataurl) => {
 export const updateShop = async (id, shopData, token) => {
   const formData = new FormData();
   Object.keys(shopData).forEach(key => {
+    const value = shopData[key];
+    
+    // Skip undefined or null values to avoid sending "undefined"/"null" strings
+    if (value === undefined || value === null || value === 'undefined' || value === 'null') {
+      return;
+    }
+
     if (key === 'profileImage' || key === 'coverImage') {
-      const img = shopData[key];
-      if (typeof img === 'string' && img.startsWith('data:')) {
-        const blob = dataURLtoBlob(img);
+      if (typeof value === 'string' && value.startsWith('data:')) {
+        const blob = dataURLtoBlob(value);
         formData.append(key, blob, `${key}.${blob.type.split('/')[1]}`);
-      } else if (img instanceof File || img instanceof Blob) {
-        formData.append(key, img);
-      } else {
-        formData.append(key, img);
+      } else if (value instanceof File || value instanceof Blob) {
+        formData.append(key, value);
+      } else if (value === '') {
+        // Explicitly send empty string to clear the image
+        formData.append(key, '');
+      } else if (typeof value === 'string' && value.startsWith('http')) {
+        // Keep existing URL
+        formData.append(key, value);
       }
-    } else if (key === 'categories' && Array.isArray(shopData[key])) {
-      formData.append(key, JSON.stringify(shopData[key]));
-    } else if (key === 'workingHours' && typeof shopData[key] === 'object') {
-      formData.append(key, JSON.stringify(shopData[key]));
+    } else if (key === 'categories' && Array.isArray(value)) {
+      formData.append(key, JSON.stringify(value));
+    } else if (key === 'workingHours' && typeof value === 'object') {
+      formData.append(key, JSON.stringify(value));
     } else {
-      formData.append(key, shopData[key]);
+      formData.append(key, value);
     }
   });
 

@@ -52,7 +52,12 @@ export const createProduct = async (productData, token) => {
       });
     } else if (key === 'tags' && Array.isArray(productData[key])) {
       formData.append(key, JSON.stringify(productData[key]));
-    } else if (productData[key] !== null && productData[key] !== undefined) {
+    } else if (
+      productData[key] !== null && 
+      productData[key] !== undefined && 
+      productData[key] !== 'null' && 
+      productData[key] !== 'undefined'
+    ) {
       formData.append(key, productData[key]);
     }
   });
@@ -83,7 +88,12 @@ export const updateProduct = async (id, productData, token) => {
       });
     } else if (key === 'tags' && Array.isArray(productData[key])) {
       formData.append(key, JSON.stringify(productData[key]));
-    } else if (productData[key] !== null && productData[key] !== undefined) {
+    } else if (
+      productData[key] !== null && 
+      productData[key] !== undefined && 
+      productData[key] !== 'null' && 
+      productData[key] !== 'undefined'
+    ) {
       formData.append(key, productData[key]);
     }
   });
