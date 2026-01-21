@@ -36,8 +36,8 @@ export const updateShop = async (id, shopData, token) => {
   Object.keys(shopData).forEach(key => {
     const value = shopData[key];
     
-    // Skip undefined or null values to avoid sending "undefined"/"null" strings
-    if (value === undefined || value === null || value === 'undefined' || value === 'null') {
+    // Skip undefined or "undefined"/"null" strings
+    if (value === undefined || value === 'undefined' || value === 'null') {
       return;
     }
 
@@ -47,7 +47,7 @@ export const updateShop = async (id, shopData, token) => {
         formData.append(key, blob, `${key}.${blob.type.split('/')[1]}`);
       } else if (value instanceof File || value instanceof Blob) {
         formData.append(key, value);
-      } else if (value === '') {
+      } else if (value === '' || value === null) {
         // Explicitly send empty string to clear the image
         formData.append(key, '');
       } else if (typeof value === 'string' && value.startsWith('http')) {
@@ -56,9 +56,9 @@ export const updateShop = async (id, shopData, token) => {
       }
     } else if (key === 'categories' && Array.isArray(value)) {
       formData.append(key, JSON.stringify(value));
-    } else if (key === 'workingHours' && typeof value === 'object') {
+    } else if (key === 'workingHours' && typeof value === 'object' && value !== null) {
       formData.append(key, JSON.stringify(value));
-    } else {
+    } else if (value !== null) {
       formData.append(key, value);
     }
   });
