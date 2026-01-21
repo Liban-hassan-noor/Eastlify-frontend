@@ -51,8 +51,10 @@ export const updateShop = async (id, shopData, token) => {
         // Explicitly send empty string to clear the image
         formData.append(key, '');
       } else if (typeof value === 'string' && value.startsWith('http')) {
-        // Keep existing URL
-        formData.append(key, value);
+        // Keep existing URL -> Send as "existingKey" to mirror product logic
+        // Capitalize the first letter of the key for the new key name
+        const existingKey = `existing${key.charAt(0).toUpperCase() + key.slice(1)}`;
+        formData.append(existingKey, value);
       }
     } else if (key === 'categories' && Array.isArray(value)) {
       formData.append(key, JSON.stringify(value));
