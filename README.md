@@ -26,7 +26,7 @@ Eastlify connects customers directly to shops in Eastleigh (Islii) without middl
 - **Frontend**: React 19 + Vite
 - **Styling**: Tailwind CSS v4
 - **Routing**: React Router 7
-- **Icons**: Lucide React
+- **Icons**: Lucide React 
 - **State Management**: React Context API + LocalStorage (for MVP data persistence)
 
 ## 🏃‍♂️ Getting Started
