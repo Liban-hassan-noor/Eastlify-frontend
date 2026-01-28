@@ -29,12 +29,15 @@ export default function ShopCard({ shop }) {
              <span className="text-xs font-bold uppercase tracking-wider">No Image</span>
           </div>
         )}
-        <div className="absolute top-2 right-2 flex flex-col gap-2">
-           <div className="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold text-gray-800 shadow-sm">
-            <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
-            {shop.rating || 'New'}
-          </div>
-        </div>
+         <div className="absolute top-2 right-2 flex flex-col gap-2">
+            <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 text-xs font-bold text-gray-800 shadow-lg">
+             <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+             <span>{shop.rating > 0 ? shop.rating.toFixed(1) : 'New'}</span>
+             {shop.totalReviews > 0 && (
+               <span className="text-gray-400">({shop.totalReviews})</span>
+             )}
+           </div>
+         </div>
         
         <button 
             onClick={handleFavorite}

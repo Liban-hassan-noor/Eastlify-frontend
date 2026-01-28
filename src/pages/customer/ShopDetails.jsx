@@ -4,6 +4,9 @@ import { useShop } from '../../context/ShopContext';
 import { Phone, MapPin, Star, Share2, ArrowLeft, Package, MessageCircle, Loader2, X, Store } from 'lucide-react';
 import * as shopsApi from '../../api/shops';
 import ImageCarousel from '../../components/ImageCarousel';
+import ReviewStats from '../../components/ReviewStats';
+import ReviewForm from '../../components/ReviewForm';
+import ReviewList from '../../components/ReviewList';
 
 export default function ShopDetails() {
   const { id } = useParams();
@@ -12,6 +15,18 @@ export default function ShopDetails() {
   const [shop, setShop] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const handleReviewSuccess = () => {
+    console.log('Review submitted successfully, triggering refresh...');
+    setRefreshTrigger(prev => prev + 1);
+    // Refresh shop data too for header rating
+    shopsApi.getShopById(id).then(data => {
+      console.log('Updated shop data:', data);
+      setShop(data);
+    });
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -88,7 +103,7 @@ export default function ShopDetails() {
                         </div>
                         <div className="flex items-center gap-2 bg-amber-500 text-white px-6 py-2.5 rounded-2xl text-sm font-black shadow-xl">
                            <Star className="w-5 h-5 fill-white" />
-                           {shop.rating || 'Featured Shop'}
+                           {shop.rating > 0 ? shop.rating.toFixed(1) : 'New'} {shop.totalReviews > 0 && `(${shop.totalReviews})`}
                         </div>
                      </div>
                   </div>
@@ -198,53 +213,86 @@ export default function ShopDetails() {
                   </div>
                )}
             </section>
-         </div>
 
-         <div className="space-y-4 md:sticky md:top-24">
-            <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-2xl relative overflow-hidden group">
-               <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-amber-100 transition-colors"></div>
-               
-               <div className="relative z-10 space-y-8">
-                  <div className="text-center">
-                    <div className="text-gray-400 text-xs font-black uppercase tracking-[0.2em] mb-2">Direct Boutique Line</div>
-                    <div className="text-2xl font-black text-gray-900 tracking-widest font-mono group-hover:text-amber-600 transition-colors">{shop.phone}</div>
-                  </div>
-                  
-                  <div className="space-y-3">
-                     <a 
-                       href={`tel:${shop.phone}`}
-                       onClick={() => handleContact('call')}
-                       className="flex items-center justify-center gap-3 w-full py-4 bg-green-600 text-white rounded-2xl font-extrabold text-lg hover:bg-green-700 transition shadow-lg shadow-green-600/30 active:scale-95 transform group-hover:scale-[1.02]"
-                     >
-                       <Phone className="w-6 h-6 fill-current animate-bounce" />
-                       Call Boutique
-                     </a>
+             {/* Reviews Section */}
+             <section className="space-y-6">
+                <div className="flex items-center justify-between">
+                   <h2 className="text-2xl font-extrabold text-gray-900 flex items-center gap-3">
+                     <MessageCircle className="w-7 h-7 text-amber-600" />
+                     What Eastleigh Shoppers Say
+                   </h2>
+                </div>
+                
+                <ReviewList shopId={id} refreshKey={refreshTrigger} />
+             </section>
+          </div>
 
-                     <a 
-                       href={`https://wa.me/${shop.phone?.replace('+', '')}`}
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       onClick={() => handleContact('whatsapp')}
-                       className="flex items-center justify-center gap-3 w-full py-4 bg-gray-900 text-white rounded-2xl font-extrabold hover:bg-black transition shadow-lg active:scale-95"
-                     >
-                       <MessageCircle className="w-6 h-6" />
-                       WhatsApp Now
-                     </a>
-                  </div>
-                  
-                  <button className="flex items-center justify-center gap-2 w-full py-3 mt-3 bg-white text-gray-500 rounded-2xl font-bold hover:bg-gray-50 transition border border-gray-100 text-sm">
-                    <Share2 className="w-4 h-4" />
-                    Share Boutique
-                  </button>
+          <div className="space-y-4 md:sticky md:top-24">
+             {/* Review Stats */}
+             <ReviewStats shopId={id} refreshKey={refreshTrigger} />
 
-                  <div className="pt-6 border-t border-gray-100 text-center">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-600/60 mb-1">Authenticated Boutique</p>
-                    <p className="text-gray-400 text-[10px] font-medium leading-relaxed">Verified Eastlify Seller since {shop?.createdAt ? new Date(shop.createdAt).getFullYear() : '2025'}</p>
-                  </div>
-               </div>
-            </div>
-         </div>
-      </div>
+             <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-amber-100 transition-colors"></div>
+                
+                <div className="relative z-10 space-y-8">
+                   <div className="text-center">
+                     <div className="text-gray-400 text-xs font-black uppercase tracking-[0.2em] mb-2">Direct Boutique Line</div>
+                     <div className="text-2xl font-black text-gray-900 tracking-widest font-mono group-hover:text-amber-600 transition-colors">{shop.phone}</div>
+                   </div>
+                   
+                   <div className="space-y-3">
+                      <a 
+                        href={`tel:${shop.phone}`}
+                        onClick={() => handleContact('call')}
+                        className="flex items-center justify-center gap-3 w-full py-4 bg-green-600 text-white rounded-2xl font-extrabold text-lg hover:bg-green-700 transition shadow-lg shadow-green-600/30 active:scale-95 transform group-hover:scale-[1.02]"
+                      >
+                        <Phone className="w-6 h-6 fill-current animate-bounce" />
+                        Call Boutique
+                      </a>
+
+                      <a 
+                        href={`https://wa.me/${shop.phone?.replace('+', '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => handleContact('whatsapp')}
+                        className="flex items-center justify-center gap-3 w-full py-4 bg-gray-900 text-white rounded-2xl font-extrabold hover:bg-black transition shadow-lg active:scale-95"
+                      >
+                        <MessageCircle className="w-6 h-6" />
+                        WhatsApp Now
+                      </a>
+
+                      <button 
+                        onClick={() => setShowReviewForm(true)}
+                        className="flex items-center justify-center gap-2 w-full py-4 bg-amber-600 text-white rounded-2xl font-extrabold hover:bg-amber-700 transition shadow-lg shadow-amber-600/30 active:scale-95"
+                      >
+                        <Star className="w-5 h-5 fill-white" />
+                        Rate this Shop
+                      </button>
+                   </div>
+                   
+                   <button className="flex items-center justify-center gap-2 w-full py-3 bg-white text-gray-500 rounded-2xl font-bold hover:bg-gray-50 transition border border-gray-100 text-sm">
+                     <Share2 className="w-4 h-4" />
+                     Share Boutique
+                   </button>
+
+                   <div className="pt-6 border-t border-gray-100 text-center">
+                     <p className="text-[10px] font-black uppercase tracking-widest text-amber-600/60 mb-1">Authenticated Boutique</p>
+                     <p className="text-gray-400 text-[10px] font-medium leading-relaxed">Verified Eastlify Seller since {shop?.createdAt ? new Date(shop.createdAt).getFullYear() : '2025'}</p>
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
+
+       {/* Review Form Modal */}
+       {showReviewForm && (
+         <ReviewForm
+           shopId={id}
+           shopName={shop.shopName}
+           onClose={() => setShowReviewForm(false)}
+           onSuccess={handleReviewSuccess}
+         />
+       )}
     </div>
   );
 }
