@@ -12,8 +12,8 @@ export default function MyShop() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [status, setStatus] = useState({ type: '', message: '' });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const isInitialized = useRef(false);
   const fileInputRef = useRef(null);
-  const coverInputRef = useRef(null);
 
   useEffect(() => {
     const loadShop = async () => {
@@ -29,11 +29,12 @@ export default function MyShop() {
   }, [fetchMyShop, currentUser?.shop]);
 
   useEffect(() => {
-    if (currentUser?.shop) {
+    if (currentUser?.shop && !isInitialized.current) {
       setFormData({
         ...currentUser.shop,
         ownerName: currentUser.name
       });
+      isInitialized.current = true;
     }
   }, [currentUser?.shop, currentUser?.name]);
 
@@ -62,6 +63,8 @@ export default function MyShop() {
     
     if (result.success) {
       setStatus({ type: 'success', message: 'Shop profile updated successfully!' });
+      // Allow the next background sync to lock in the new Cloudinary URLs
+      isInitialized.current = false;
       setTimeout(() => setStatus({ type: '', message: '' }), 5000);
     } else {
       setStatus({ type: 'error', message: result.message || 'Failed to update shop profile' });
@@ -141,81 +144,68 @@ export default function MyShop() {
         </div>
       )}
 
-      {/* HEADER WITH IMAGES */}
+      {/* HEADER WITH WIDE PROFILE IMAGE */}
       <div className="bg-white rounded-[3rem] border border-gray-100 shadow-xl overflow-hidden group">
-        {/* Cover Image with Glass Overlay */}
-        <div className="relative h-56 sm:h-72 lg:h-80 bg-gray-100 group/cover overflow-hidden">
-          {formData.coverImage ? (
-            <img src={formData.coverImage} alt="Cover" className="w-full h-full object-cover group-hover/cover:scale-105 transition-transform duration-700" />
+        {/* Wide Profile Image Section */}
+        <div className="relative h-64 sm:h-80 lg:h-96 bg-gray-100 group/profile overflow-hidden">
+          {formData.profileImage ? (
+            <img 
+              src={formData.profileImage} 
+              alt="Profile" 
+              className="w-full h-full object-cover group-hover/profile:scale-105 transition-transform duration-700" 
+            />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100 flex items-center justify-center">
                <Store className="w-20 h-20 text-amber-200 opacity-50" />
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40" />
           
+          {/* Subtle Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
+          
+          {/* Edit Button - Matches Listing Form Style */}
           <div className="absolute top-6 right-6 flex gap-3">
-            <button 
-              type="button"
-              onClick={() => coverInputRef.current?.click()}
-              className="px-5 py-2.5 bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl hover:bg-white transition-all active:scale-95 flex items-center gap-2 text-xs font-black text-gray-800 uppercase tracking-widest border border-white/50"
-            >
-              <Camera className="w-4 h-4" />
-              <span>Edit Cover</span>
-            </button>
-            {formData.coverImage && (
+            <label className="cursor-pointer group/upload">
+              <div className="px-6 py-3 bg-white/90 backdrop-blur-md text-gray-900 rounded-2xl shadow-2xl hover:bg-white hover:scale-105 transition-all active:scale-95 flex items-center gap-2 text-xs font-black uppercase tracking-widest border border-white/50 z-20">
+                <Camera className="w-4 h-4 text-amber-600" />
+                <span>Change Boutique Photo</span>
+              </div>
+              <input 
+                type="file" 
+                className="hidden" 
+                accept="image/*" 
+                onChange={(e) => handleImageUpload(e, 'profileImage')} 
+              />
+            </label>
+            {formData.profileImage && (
               <button 
                 type="button"
-                onClick={() => removeImage('coverImage')}
-                className="p-2.5 bg-red-500/90 backdrop-blur-sm text-white rounded-2xl shadow-xl hover:bg-red-600 transition active:scale-95 border border-red-400/50"
+                onClick={() => removeImage('profileImage')}
+                className="p-3 bg-red-500/90 backdrop-blur-sm text-white rounded-2xl shadow-xl hover:bg-red-600 hover:scale-105 transition active:scale-95 border border-red-400/50 z-20"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
             )}
           </div>
-          <input type="file" ref={coverInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'coverImage')} />
-        </div>
 
-        {/* Profile Info Row with Overlapping Card style */}
-        <div className="px-10 pb-10 -mt-16 sm:-mt-20 relative flex flex-col sm:flex-row items-center sm:items-end gap-8">
-          <div className="relative group/profile">
-            <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-[3rem] bg-white p-2 shadow-2xl border border-gray-100/50 overflow-hidden relative">
-              <div className="w-full h-full rounded-[2.5rem] bg-gray-50 overflow-hidden relative">
-                {formData.profileImage ? (
-                  <img src={formData.profileImage} alt="Profile" className="w-full h-full object-cover group-hover/profile:scale-110 transition-transform duration-500" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-amber-50 text-amber-600">
-                    <User className="w-16 h-16 opacity-30" />
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-black/0 group-hover/profile:bg-black/20 transition-colors flex items-center justify-center">
-                   <Camera className="w-8 h-8 text-white opacity-0 group-hover/profile:opacity-100 transform scale-50 group-hover/profile:scale-100 transition-all duration-300" />
-                </div>
+          {/* Shop info overlaid on the image for premium look */}
+          <div className="absolute bottom-0 left-0 right-0 p-8 sm:p-12 text-white">
+            <div className="max-w-4xl space-y-4">
+              <div className="inline-block px-3 py-1 bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg">
+                Exclusive Boutique
+              </div>
+              <h1 className="text-4xl sm:text-6xl font-black tracking-tight drop-shadow-xl">
+                {formData.shopName || 'Market Shop'}
+              </h1>
+              <div className="flex flex-wrap gap-4 mt-2">
+                <span className="flex items-center gap-2 bg-white/20 backdrop-blur-md px-5 py-2.5 rounded-2xl text-xs font-bold border border-white/30 truncate max-w-[200px]">
+                  <MapPin className="w-4 h-4 text-amber-400" /> {formData.street || 'Set location'}
+                </span>
+                <span className="flex items-center gap-2 bg-white/20 backdrop-blur-md px-5 py-2.5 rounded-2xl text-xs font-bold border border-white/30">
+                  <User className="w-4 h-4 text-amber-400" /> {formData.ownerName || 'Set owner'}
+                </span>
               </div>
             </div>
-            <button 
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-2 right-2 p-3 bg-amber-600 text-white rounded-2xl shadow-2xl hover:bg-amber-700 transition-all active:scale-95 border-4 border-white z-10"
-            >
-              <Camera className="w-5 h-5" />
-            </button>
-            <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'profileImage')} />
-          </div>
-
-          <div className="flex-1 text-center sm:text-left pt-6 sm:pb-4 space-y-3">
-             <div className="inline-block px-3 py-1 bg-amber-100 text-amber-800 text-[10px] font-black uppercase tracking-widest rounded-lg mb-1">
-                Boutique Preview
-             </div>
-             <h1 className="text-4xl sm:text-5xl font-black text-gray-900 tracking-tight drop-shadow-sm">{formData.shopName || 'Market Shop'}</h1>
-             <div className="flex flex-wrap justify-center sm:justify-start gap-3 mt-4">
-                <span className="flex items-center gap-2 text-gray-500 font-bold bg-gray-50 px-5 py-2 rounded-2xl text-xs border border-gray-100 shadow-sm">
-                  <MapPin className="w-4 h-4 text-amber-500" /> {formData.street || 'Set location'}
-                </span>
-                <span className="flex items-center gap-2 text-gray-500 font-bold bg-gray-50 px-5 py-2 rounded-2xl text-xs border border-gray-100 shadow-sm">
-                  <User className="w-4 h-4 text-amber-500" /> {formData.ownerName || 'Set owner'}
-                </span>
-             </div>
           </div>
         </div>
       </div>
