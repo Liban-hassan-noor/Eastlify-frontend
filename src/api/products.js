@@ -50,8 +50,13 @@ export const createProduct = async (productData, token) => {
           formData.append('images', image);
         }
       });
-    } else if ((key === 'tags' || key === 'variants') && Array.isArray(productData[key])) {
-      formData.append(key, JSON.stringify(productData[key]));
+    } else if (key === 'tags' || key === 'variants') {
+      // Robustly stringify arrays or objects to prevent [object Object]
+      if (Array.isArray(productData[key]) || (typeof productData[key] === 'object' && productData[key] !== null)) {
+        formData.append(key, JSON.stringify(productData[key]));
+      } else {
+        formData.append(key, productData[key]);
+      }
     } else if (
       productData[key] !== null && 
       productData[key] !== undefined && 
@@ -81,13 +86,16 @@ export const updateProduct = async (id, productData, token) => {
         } else if (image instanceof File || image instanceof Blob) {
           formData.append('images', image);
         } else if (typeof image === 'string' && image.startsWith('http')) {
-          // If it's already an uploaded URL, we might need a way to keep it
-          // For now, let's just pass it as a string if the backend handles it or handle in controller
+          // If already an uploaded URL, pass as existingImages
           formData.append('existingImages', image);
         }
       });
-    } else if ((key === 'tags' || key === 'variants') && Array.isArray(productData[key])) {
-      formData.append(key, JSON.stringify(productData[key]));
+    } else if (key === 'tags' || key === 'variants') {
+      if (Array.isArray(productData[key]) || (typeof productData[key] === 'object' && productData[key] !== null)) {
+        formData.append(key, JSON.stringify(productData[key]));
+      } else {
+        formData.append(key, productData[key]);
+      }
     } else if (
       productData[key] !== null && 
       productData[key] !== undefined && 
