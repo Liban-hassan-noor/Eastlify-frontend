@@ -9,7 +9,7 @@ import BrowseShops from './pages/customer/BrowseShops';
 import ShopDetails from './pages/customer/ShopDetails';
 
 // Shop Pages
-import Register from './pages/shop/Register';
+import Register from './pages/shop/Register'; 
 import Login from './pages/shop/Login';
 import DashboardLayout from './pages/dashboard/DashboardLayout';
 
