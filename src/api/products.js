@@ -50,7 +50,7 @@ export const createProduct = async (productData, token) => {
           formData.append('images', image);
         }
       });
-    } else if (key === 'tags' && Array.isArray(productData[key])) {
+    } else if ((key === 'tags' || key === 'variants') && Array.isArray(productData[key])) {
       formData.append(key, JSON.stringify(productData[key]));
     } else if (
       productData[key] !== null && 
@@ -86,7 +86,7 @@ export const updateProduct = async (id, productData, token) => {
           formData.append('existingImages', image);
         }
       });
-    } else if (key === 'tags' && Array.isArray(productData[key])) {
+    } else if ((key === 'tags' || key === 'variants') && Array.isArray(productData[key])) {
       formData.append(key, JSON.stringify(productData[key]));
     } else if (
       productData[key] !== null && 

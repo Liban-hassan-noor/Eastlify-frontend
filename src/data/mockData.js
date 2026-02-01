@@ -1,15 +1,15 @@
 export const MOCK_CATEGORIES = [
-  { id: '1', name: "Textiles", icon: "Shirt" },
-  { id: '2', name: "Islamic Wear", icon: "Moon" },
-  { id: '3', name: "Shoes", icon: "Footprints" },
-  { id: '4', name: "Cosmetics", icon: "Sparkles" },
-  { id: '5', name: "Perfumes & Fragrances", icon: "SprayCan" },
-  { id: '6', name: "Electronics", icon: "Smartphone" },
-  { id: '7', name: "Phones & Accessories", icon: "Phone" },
-  { id: '8', name: "Bags & Luggage", icon: "Briefcase" },
-  { id: '9', name: "Kids & Baby Wear", icon: "Baby" },
-  { id: '10', name: "Home & Household", icon: "Home" },
-  { id: '11', name: "Wholesale", icon: "Box" }
+  { id: '1', name: "Textiles", icon: "Shirt", attributes: { hasSizes: true, hasColors: true, sizeType: 'alpha' } },
+  { id: '2', name: "Islamic Wear", icon: "Moon", attributes: { hasSizes: true, hasColors: true, sizeType: 'alpha' } },
+  { id: '3', name: "Shoes", icon: "Footprints", attributes: { hasSizes: true, hasColors: true, sizeType: 'numeric' } },
+  { id: '4', name: "Cosmetics", icon: "Sparkles", attributes: { hasSizes: false, hasColors: false } },
+  { id: '5', name: "Perfumes & Fragrances", icon: "SprayCan", attributes: { hasSizes: false, hasColors: false } },
+  { id: '6', name: "Electronics", icon: "Smartphone", attributes: { hasSizes: false, hasColors: true } },
+  { id: '7', name: "Phones & Accessories", icon: "Phone", attributes: { hasSizes: false, hasColors: true } },
+  { id: '8', name: "Bags & Luggage", icon: "Briefcase", attributes: { hasSizes: false, hasColors: true } },
+  { id: '9', name: "Kids & Baby Wear", icon: "Baby", attributes: { hasSizes: true, hasColors: true, sizeType: 'alpha' } },
+  { id: '10', name: "Home & Household", icon: "Home", attributes: { hasSizes: false, hasColors: true } },
+  { id: '11', name: "Wholesale", icon: "Box", attributes: { hasSizes: false, hasColors: false } }
 ];
 
 export const MOCK_STREETS = [

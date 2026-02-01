@@ -112,8 +112,8 @@ export default function ShopDetails() {
          </div>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-10 items-start mt-12">
-          <div className="md:col-span-2 space-y-10">
+      <div className="grid lg:grid-cols-12 gap-10 items-start mt-12">
+          <div className="lg:col-span-8 space-y-10">
             <section className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-sm leading-relaxed relative overflow-hidden">
               <div className="absolute top-0 right-0 w-40 h-40 bg-amber-50 rounded-full blur-3xl -mr-20 -mt-20 opacity-50"></div>
               <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
@@ -148,10 +148,10 @@ export default function ShopDetails() {
                      <p className="text-gray-500 font-bold">Polishing items...</p>
                   </div>
                ) : listings.length > 0 ? (
-                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
                        {listings.map((item, index) => (
-                         <div key={item._id || index} className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-2xl hover:translate-y-[-8px] transition-all duration-500 group overflow-hidden flex flex-col">
-                           <div className="relative aspect-[4/5] overflow-hidden">
+                         <div key={item._id || index} className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-500 group overflow-hidden flex flex-col">
+                           <div className="relative aspect-square sm:aspect-[4/3] overflow-hidden">
                               <ImageCarousel 
                                 images={item.images} 
                                 aspectRatio="h-full w-full"
@@ -164,44 +164,90 @@ export default function ShopDetails() {
                                )}
                                {!item.inStock && (
                                  <div className="absolute inset-0 bg-black/60 backdrop-blur-[4px] flex items-center justify-center p-4 z-20">
-                                    <span className="text-white text-sm font-black uppercase tracking-widest text-center border-2 border-white/30 px-6 py-2 rounded-full backdrop-blur-md">Sold Out</span>
+                                    <span className="text-white text-base font-black uppercase tracking-widest text-center border-2 border-white/30 px-6 py-2 rounded-full backdrop-blur-md">Sold Out</span>
                                  </div>
                                )}
                            </div>
                            
-                           <div className="p-6 flex flex-col flex-1">
-                              <div className="font-black text-gray-900 mb-2 text-xl group-hover:text-amber-600 transition-colors line-clamp-1">{item.name}</div>
-                              <p className="text-gray-500 text-sm line-clamp-2 mb-6 font-medium leading-relaxed">
+                           <div className="p-5 flex flex-col flex-1">
+                              <div className="font-black text-gray-900 mb-1 text-xl group-hover:text-amber-600 transition-colors line-clamp-1">{item.name}</div>
+                              <p className="text-gray-500 text-sm line-clamp-2 mb-4 font-medium leading-snug">
                                 {item.description}
                               </p>
-                              
                               <div className="mt-auto space-y-4">
-                                <div className="flex items-end justify-between">
-                                   <div className="space-y-1">
-                                      <div className="text-amber-600 font-black text-2xl tracking-tight">
-                                        <span className="text-xs mr-1 opacity-70">KES</span>
-                                        {item.price?.toLocaleString()}
-                                      </div>
-                                      {(item.compareAtPrice && item.compareAtPrice > item.price) && (
-                                        <div className="text-xs text-gray-400 line-through font-bold opacity-60">KES {item.compareAtPrice?.toLocaleString()}</div>
+                                  {/* Variant Availability Display */}
+                                  {(item.hasSizes || item.hasColors) && (
+                                    <div className="space-y-3 pt-3 border-t border-gray-50">
+                                      {item.hasSizes && (
+                                        <div className="space-y-2">
+                                          <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Sizes</span>
+                                          <div className="flex flex-wrap gap-2">
+                                            {[...new Set((item.variants || []).map(v => v.size).filter(Boolean))].map(size => {
+                                              const isAvailable = item.variants.some(v => v.size === size && (v.stock > 0 || v.inStock));
+                                              return (
+                                                <span 
+                                                  key={size} 
+                                                  className={`px-4 py-1.5 rounded-xl text-sm font-bold border transition-all duration-300 ${
+                                                    isAvailable 
+                                                      ? 'bg-amber-50 border-amber-100 text-amber-700' 
+                                                      : 'bg-gray-50 border-gray-50 text-gray-300 opacity-60'
+                                                  }`}
+                                                >
+                                                  {size}
+                                                </span>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
                                       )}
+                                      {item.hasColors && (
+                                        <div className="space-y-2">
+                                          <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Colors</span>
+                                          <div className="flex flex-wrap gap-2">
+                                            {[...new Set((item.variants || []).map(v => v.color).filter(Boolean))].map(color => {
+                                              const isAvailable = item.variants.some(v => v.color === color && (v.stock > 0 || v.inStock));
+                                              return (
+                                                <span 
+                                                  key={color} 
+                                                  className={`px-4 py-1.5 rounded-xl text-sm font-bold border transition-all duration-300 ${
+                                                    isAvailable 
+                                                      ? 'bg-amber-50 border-amber-100 text-amber-700' 
+                                                      : 'bg-gray-50 border-gray-50 text-gray-300 opacity-60'
+                                                  }`}
+                                                >
+                                                  {color}
+                                                </span>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+
+                                   <div className="flex items-end justify-between py-1">
+                                      <div className="space-y-0.5">
+                                         <div className="text-amber-600 font-black text-2xl tracking-tight">
+                                           <span className="text-xs mr-1 opacity-70">KES</span>
+                                           {item.price?.toLocaleString()}
+                                         </div>
+                                         {(item.compareAtPrice && item.compareAtPrice > item.price) && (
+                                           <div className="text-xs text-gray-400 line-through font-bold opacity-60">KES {item.compareAtPrice?.toLocaleString()}</div>
+                                         )}
+                                      </div>
                                    </div>
-                                   <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 px-2 py-1 rounded-md">
-                                      {item.category}
-                                   </div>
-                                </div>
-      
-                                <a 
-                                  href={`https://wa.me/${shop.phone?.replace('+', '')}?text=Hi, I am interested in ${item.name} at ${shop.shopName}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  onClick={() => handleContact('whatsapp')}
-                                  className="flex items-center justify-center gap-2 w-full py-4 bg-gray-900 text-white text-sm font-black rounded-2xl hover:bg-black transition-all shadow-xl shadow-gray-900/10 active:scale-95 group-hover:bg-amber-600"
-                                >
-                                  <MessageCircle className="w-5 h-5" />
-                                  Chat with Seller
-                                </a>
-                              </div>
+         
+                                   <a 
+                                     href={`https://wa.me/${shop.phone?.replace('+', '')}?text=Hi, I am interested in ${item.name} at ${shop.shopName}`}
+                                     target="_blank"
+                                     rel="noopener noreferrer"
+                                     onClick={() => handleContact('whatsapp')}
+                                     className="flex items-center justify-center gap-2 w-full py-3.5 bg-gray-900 text-white text-sm font-black rounded-2xl hover:bg-black transition-all shadow-lg active:scale-95 group-hover:bg-amber-600"
+                                   >
+                                     <MessageCircle className="w-5 h-5" />
+                                     Chat with Seller
+                                   </a>
+                                 </div>
                            </div>
                          </div>
                        ))}
@@ -227,7 +273,7 @@ export default function ShopDetails() {
              </section>
           </div>
 
-          <div className="space-y-4 md:sticky md:top-24">
+          <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-24">
              {/* Review Stats */}
              <ReviewStats shopId={id} refreshKey={refreshTrigger} />
 
